@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketMentor - Stock Market Simulation</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #131824;
+            --bg-tertiary: #1a1f2e;
+            --bg-card: #1e2433;
+            --accent-green: #00ff88;
+            --accent-red: #ff3366;
+            --accent-blue: #00aaff;
+            --accent-yellow: #ffd700;
+            --text-primary: #e8edf4;
+            --text-secondary: #98a2b3;
+            --text-muted: #6b7785;
+            --border: #2a3142;
+            --border-highlight: #3a4556;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #0d1220 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.15;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        #root {
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(19, 24, 36, 0.95);
+            border-bottom: 2px solid var(--border-highlight);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo::before {
+            content: '◆';
+            font-size: 1.2rem;
+            -webkit-text-fill-color: var(--accent-green);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .balance-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-green);
+        }
+
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-green), #00cc70);
+            color: var(--bg-primary);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-highlight);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-red), #cc1144);
+            color: white;
+        }
+
+        /* Login/Signup Screen */
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-highlight);
+            border-radius: 16px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.1);
+        }
+
+        .form-toggle {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .form-toggle button {
+            background: none;
+            border: none;
+            color: var(--accent-blue);
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        /* Main Dashboard */
+        .dashboard {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-highlight);
+            padding: 2rem 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--bg-tertiary);
+            border-left-color: var(--accent-green);
+            color: var(--text-primary);
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Portfolio Cards */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-highlight);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-blue);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            color: var(--accent-green);
+        }
+
+        .stat-change.negative {
+            color: var(--accent-red);
+        }
+
+        /* Stock Table */
+        .table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-highlight);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-tertiary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            outline: none;
+            width: 250px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-tertiary);
+        }
+
+        th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        tbody tr {
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .stock-symbol {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-size: 1.1rem;
+        }
+
+        .stock-name {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-highlight);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.8rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: var(--accent-green);
+            border-bottom-color: var(--accent-green);
+        }
+
+        /* Transaction Form */
+        .transaction-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .quantity-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quantity-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-blue);
+        }
+
+        .quantity-input {
+            flex: 1;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .transaction-summary {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            margin-top: 0.5rem;
+        }
+
+        /* Teacher Dashboard */
+        .teacher-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-highlight);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .control-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-green);
+            box-shadow: 0 8px 24px rgba(0, 255, 136, 0.2);
+        }
+
+        .control-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .control-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--accent-green);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: var(--accent-green);
+        }
+
+        .alert-error {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            color: var(--accent-red);
+        }
+
+        .alert-info {
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            color: var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        // ============ DATA STORAGE (In production, use backend API) ============
+        const STORAGE_KEY = 'marketmentor_data';
+
+        const loadData = () => {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            return {
+                users: [],
+                teachers: [],
+                classes: [],
+                transactions: [],
+                teacherCodes: []
+            };
+        };
+
+        const saveData = (data) => {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        };
+
+        // ============ STOCK API INTEGRATION ============
+        // This uses a mock API - replace with real API like Alpha Vantage, IEX Cloud, etc.
+        const POPULAR_STOCKS = [
+            // Technology
+            { symbol: 'AAPL', name: 'Apple Inc.', price: 178.23, change: 2.45, changePercent: 1.39 },
+            { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 142.56, change: -1.23, changePercent: -0.86 },
+            { symbol: 'MSFT', name: 'Microsoft Corp.', price: 378.91, change: 4.32, changePercent: 1.15 },
+            { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 155.67, change: 1.89, changePercent: 1.23 },
+            { symbol: 'TSLA', name: 'Tesla Inc.', price: 248.42, change: -5.67, changePercent: -2.23 },
+            { symbol: 'META', name: 'Meta Platforms', price: 334.12, change: 3.45, changePercent: 1.04 },
+            { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 495.22, change: 12.34, changePercent: 2.56 },
+            { symbol: 'NFLX', name: 'Netflix Inc.', price: 428.67, change: 5.23, changePercent: 1.23 },
+            { symbol: 'AMD', name: 'Advanced Micro Devices', price: 142.18, change: 3.42, changePercent: 2.47 },
+            { symbol: 'INTC', name: 'Intel Corporation', price: 43.26, change: -0.54, changePercent: -1.23 },
+            { symbol: 'ORCL', name: 'Oracle Corporation', price: 112.45, change: 1.23, changePercent: 1.11 },
+            { symbol: 'CSCO', name: 'Cisco Systems', price: 51.34, change: 0.67, changePercent: 1.32 },
+            { symbol: 'CRM', name: 'Salesforce Inc.', price: 234.56, change: 2.89, changePercent: 1.25 },
+            { symbol: 'ADBE', name: 'Adobe Inc.', price: 567.89, change: 4.23, changePercent: 0.75 },
+            
+            // Finance
+            { symbol: 'JPM', name: 'JPMorgan Chase', price: 156.78, change: 0.92, changePercent: 0.59 },
+            { symbol: 'BAC', name: 'Bank of America', price: 34.21, change: 0.45, changePercent: 1.33 },
+            { symbol: 'WFC', name: 'Wells Fargo', price: 48.92, change: -0.34, changePercent: -0.69 },
+            { symbol: 'GS', name: 'Goldman Sachs', price: 378.45, change: 3.21, changePercent: 0.86 },
+            { symbol: 'MS', name: 'Morgan Stanley', price: 89.34, change: 1.12, changePercent: 1.27 },
+            { symbol: 'V', name: 'Visa Inc.', price: 245.67, change: 2.34, changePercent: 0.96 },
+            { symbol: 'MA', name: 'Mastercard Inc.', price: 412.34, change: 3.45, changePercent: 0.84 },
+            { symbol: 'AXP', name: 'American Express', price: 178.92, change: 1.89, changePercent: 1.07 },
+            
+            // Healthcare
+            { symbol: 'JNJ', name: 'Johnson & Johnson', price: 161.23, change: 0.89, changePercent: 0.55 },
+            { symbol: 'UNH', name: 'UnitedHealth Group', price: 512.34, change: 4.56, changePercent: 0.90 },
+            { symbol: 'PFE', name: 'Pfizer Inc.', price: 28.45, change: -0.23, changePercent: -0.80 },
+            { symbol: 'ABBV', name: 'AbbVie Inc.', price: 156.78, change: 1.23, changePercent: 0.79 },
+            { symbol: 'TMO', name: 'Thermo Fisher Scientific', price: 534.21, change: 3.45, changePercent: 0.65 },
+            { symbol: 'MRK', name: 'Merck & Co.', price: 108.34, change: 0.78, changePercent: 0.73 },
+            
+            // Consumer
+            { symbol: 'WMT', name: 'Walmart Inc.', price: 167.89, change: 1.23, changePercent: 0.74 },
+            { symbol: 'HD', name: 'Home Depot', price: 345.67, change: 2.89, changePercent: 0.84 },
+            { symbol: 'MCD', name: "McDonald's Corp.", price: 289.45, change: 1.67, changePercent: 0.58 },
+            { symbol: 'NKE', name: 'Nike Inc.', price: 102.34, change: -0.89, changePercent: -0.86 },
+            { symbol: 'SBUX', name: 'Starbucks Corp.', price: 98.76, change: 0.54, changePercent: 0.55 },
+            { symbol: 'TGT', name: 'Target Corp.', price: 156.78, change: 1.23, changePercent: 0.79 },
+            { symbol: 'COST', name: 'Costco Wholesale', price: 678.90, change: 5.67, changePercent: 0.84 },
+            
+            // Energy
+            { symbol: 'XOM', name: 'Exxon Mobil', price: 112.45, change: 1.89, changePercent: 1.71 },
+            { symbol: 'CVX', name: 'Chevron Corp.', price: 156.78, change: 2.34, changePercent: 1.51 },
+            
+            // Industrial
+            { symbol: 'BA', name: 'Boeing Co.', price: 189.45, change: -2.34, changePercent: -1.22 },
+            { symbol: 'CAT', name: 'Caterpillar Inc.', price: 287.90, change: 3.45, changePercent: 1.21 },
+            { symbol: 'GE', name: 'General Electric', price: 112.34, change: 1.56, changePercent: 1.41 },
+            
+            // Telecom
+            { symbol: 'T', name: 'AT&T Inc.', price: 18.45, change: 0.12, changePercent: 0.65 },
+            { symbol: 'VZ', name: 'Verizon Communications', price: 40.23, change: 0.34, changePercent: 0.85 },
+            
+            // Media & Entertainment  
+            { symbol: 'DIS', name: 'Walt Disney Co.', price: 91.23, change: -0.89, changePercent: -0.97 },
+            { symbol: 'CMCSA', name: 'Comcast Corp.', price: 43.56, change: 0.45, changePercent: 1.04 },
+        ];
+
+        const fetchStockPrice = async (symbol) => {
+            // Mock function - replace with real API call
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const stock = POPULAR_STOCKS.find(s => s.symbol === symbol);
+            return stock || { symbol, name: 'Unknown', price: 100, change: 0, changePercent: 0 };
+        };
+
+        const searchStocks = async (query) => {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            return POPULAR_STOCKS.filter(stock => 
+                stock.symbol.toLowerCase().includes(query.toLowerCase()) ||
+                stock.name.toLowerCase().includes(query.toLowerCase())
+            );
+        };
+
+        // ============ MAIN APP COMPONENT ============
+        const App = () => {
+            const [currentUser, setCurrentUser] = useState(null);
+            const [isTeacher, setIsTeacher] = useState(false);
+            const [view, setView] = useState('login');
+            const [data, setData] = useState(loadData());
+
+            useEffect(() => {
+                saveData(data);
+            }, [data]);
+
+            const login = (email, password, asTeacher = false) => {
+                const users = asTeacher ? data.teachers : data.users;
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    setCurrentUser(user);
+                    setIsTeacher(asTeacher);
+                    setView(asTeacher ? 'teacher-dashboard' : 'dashboard');
+                    return true;
+                }
+                return false;
+            };
+
+            const logout = () => {
+                setCurrentUser(null);
+                setIsTeacher(false);
+                setView('login');
+            };
+
+            const signup = (userData) => {
+                if (userData.isTeacher) {
+                    const newTeacher = {
+                        id: Date.now(),
+                        ...userData,
+                        balance: 100000, // Teachers also start with balance to demonstrate
+                        portfolio: [],
+                        transactions: [],
+                        createdAt: new Date().toISOString()
+                    };
+                    setData({...data, teachers: [...data.teachers, newTeacher]});
+                } else {
+                    const newUser = {
+                        id: Date.now(),
+                        ...userData,
+                        balance: 100000, // Starting balance
+                        portfolio: [],
+                        transactions: [],
+                        createdAt: new Date().toISOString()
+                    };
+                    setData({...data, users: [...data.users, newUser]});
+                }
+                return true;
+            };
+
+            const updateUser = (updatedUser) => {
+                if (isTeacher) {
+                    const teachers = data.teachers.map(t => 
+                        t.id === updatedUser.id ? updatedUser : t
+                    );
+                    setData({...data, teachers});
+                } else {
+                    const users = data.users.map(u => 
+                        u.id === updatedUser.id ? updatedUser : u
+                    );
+                    setData({...data, users});
+                }
+                setCurrentUser(updatedUser);
+            };
+
+            if (view === 'login' || view === 'signup') {
+                return <AuthScreen 
+                    view={view} 
+                    setView={setView} 
+                    login={login}
+                    signup={signup}
+                    data={data}
+                />;
+            }
+
+            if (isTeacher) {
+                return <TeacherDashboard 
+                    teacher={currentUser}
+                    logout={logout}
+                    data={data}
+                    setData={setData}
+                />;
+            }
+
+            return <StudentDashboard 
+                user={currentUser}
+                updateUser={updateUser}
+                logout={logout}
+            />;
+        };
+
+        // ============ AUTH SCREEN ============
+        const AuthScreen = ({ view, setView, login, signup, data }) => {
+            const [formData, setFormData] = useState({
+                email: '',
+                password: '',
+                name: '',
+                teacherCode: '',
+                isTeacher: false
+            });
+            const [error, setError] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setError('');
+
+                if (view === 'login') {
+                    const success = login(formData.email, formData.password, formData.isTeacher);
+                    if (!success) {
+                        setError('Invalid credentials');
+                    }
+                } else {
+                    if (!formData.isTeacher && !formData.teacherCode) {
+                        setError('Teacher code is required for students');
+                        return;
+                    }
+                    if (!formData.isTeacher) {
+                        const validCode = data.teacherCodes.find(c => c.code === formData.teacherCode);
+                        if (!validCode) {
+                            setError('Invalid teacher code');
+                            return;
+                        }
+                    }
+                    signup(formData);
+                    setView('login');
+                }
+            };
+
+            return (
+                <div className="auth-container">
+                    <div className="auth-card fade-in">
+                        <h1 className="auth-title">
+                            {view === 'login' ? 'Welcome Back' : 'Create Account'}
+                        </h1>
+                        <p className="auth-subtitle">
+                            {view === 'login' 
+                                ? 'Sign in to continue your investment journey' 
+                                : 'Join MarketMentor and start learning'}
+                        </p>
+
+                        {error && <div className="alert alert-error">{error}</div>}
+
+                        <form onSubmit={handleSubmit}>
+                            {view === 'signup' && (
+                                <div className="form-group">
+                                    <label className="form-label">Full Name</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        required
+                                    />
+                                </div>
+                            )}
+
+                            <div className="form-group">
+                                <label className="form-label">Email</label>
+                                <input
+                                    type="email"
+                                    className="form-input"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Password</label>
+                                <input
+                                    type="password"
+                                    className="form-input"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                                    required
+                                />
+                            </div>
+
+                            {view === 'signup' && (
+                                <>
+                                    <div className="form-group">
+                                        <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.isTeacher}
+                                                onChange={(e) => setFormData({...formData, isTeacher: e.target.checked})}
+                                            />
+                                            <span className="form-label" style={{margin: 0}}>I'm a teacher</span>
+                                        </label>
+                                    </div>
+
+                                    {!formData.isTeacher && (
+                                        <div className="form-group">
+                                            <label className="form-label">Teacher Code</label>
+                                            <input
+                                                type="text"
+                                                className="form-input"
+                                                value={formData.teacherCode}
+                                                onChange={(e) => setFormData({...formData, teacherCode: e.target.value})}
+                                                placeholder="Enter code from your teacher"
+                                                required
+                                            />
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {view === 'login' && (
+                                <div className="form-group">
+                                    <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.isTeacher}
+                                            onChange={(e) => setFormData({...formData, isTeacher: e.target.checked})}
+                                        />
+                                        <span className="form-label" style={{margin: 0}}>Login as teacher</span>
+                                    </label>
+                                </div>
+                            )}
+
+                            <button type="submit" className="btn btn-primary" style={{width: '100%', marginTop: '1rem'}}>
+                                {view === 'login' ? 'Sign In' : 'Create Account'}
+                            </button>
+                        </form>
+
+                        <div className="form-toggle">
+                            {view === 'login' ? (
+                                <>Don't have an account? <button onClick={() => setView('signup')}>Sign up</button></>
+                            ) : (
+                                <>Already have an account? <button onClick={() => setView('login')}>Sign in</button></>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ STUDENT DASHBOARD CONTENT (Reusable) ============
+        const StudentDashboardContent = ({ user, updateUser, stocks, searchQuery, setSearchQuery, selectedStock, setSelectedStock, showTradeModal, setShowTradeModal, executeTrade }) => {
+            const [activeTab, setActiveTab] = useState('portfolio');
+
+            const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
+                const stock = stocks.find(s => s.symbol === holding.symbol);
+                return sum + (stock ? stock.price * holding.shares : 0);
+            }, 0);
+
+            const totalGain = totalValue - 100000;
+            const totalGainPercent = (totalGain / 100000) * 100;
+
+            return (
+                <>
+                    <nav className="tabs" style={{borderBottom: '2px solid var(--border)', marginBottom: '2rem'}}>
+                        <button className={`tab ${activeTab === 'portfolio' ? 'active' : ''}`} onClick={() => setActiveTab('portfolio')}>
+                            Portfolio
+                        </button>
+                        <button className={`tab ${activeTab === 'market' ? 'active' : ''}`} onClick={() => setActiveTab('market')}>
+                            Market
+                        </button>
+                        <button className={`tab ${activeTab === 'transactions' ? 'active' : ''}`} onClick={() => setActiveTab('transactions')}>
+                            Transactions
+                        </button>
+                    </nav>
+
+                    {activeTab === 'portfolio' && (
+                        <PortfolioView 
+                            user={user} 
+                            stocks={stocks}
+                            totalValue={totalValue}
+                            totalGain={totalGain}
+                            totalGainPercent={totalGainPercent}
+                            onTrade={(stock) => {
+                                setSelectedStock(stock);
+                                setShowTradeModal(true);
+                            }}
+                        />
+                    )}
+
+                    {activeTab === 'market' && (
+                        <MarketView 
+                            stocks={stocks}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            onTrade={(stock) => {
+                                setSelectedStock(stock);
+                                setShowTradeModal(true);
+                            }}
+                        />
+                    )}
+
+                    {activeTab === 'transactions' && (
+                        <TransactionsView transactions={user.transactions} stocks={stocks} />
+                    )}
+                </>
+            );
+        };
+
+        // ============ STUDENT DASHBOARD ============
+        const StudentDashboard = ({ user, updateUser, logout }) => {
+            const [activeTab, setActiveTab] = useState('portfolio');
+            const [selectedStock, setSelectedStock] = useState(null);
+            const [showTradeModal, setShowTradeModal] = useState(false);
+            const [stocks, setStocks] = useState(POPULAR_STOCKS);
+            const [searchQuery, setSearchQuery] = useState('');
+
+            const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
+                const stock = stocks.find(s => s.symbol === holding.symbol);
+                return sum + (stock ? stock.price * holding.shares : 0);
+            }, 0);
+
+            const totalGain = totalValue - 100000;
+            const totalGainPercent = (totalGain / 100000) * 100;
+
+            const executeTrade = (symbol, shares, type) => {
+                const stock = stocks.find(s => s.symbol === symbol);
+                if (!stock) return;
+
+                const cost = stock.price * shares;
+
+                if (type === 'buy') {
+                    if (cost > user.balance) {
+                        alert('Insufficient funds');
+                        return;
+                    }
+
+                    const existingHolding = user.portfolio.find(h => h.symbol === symbol);
+                    const newPortfolio = existingHolding
+                        ? user.portfolio.map(h => 
+                            h.symbol === symbol 
+                                ? { ...h, shares: h.shares + shares, avgCost: ((h.avgCost * h.shares) + cost) / (h.shares + shares) }
+                                : h
+                          )
+                        : [...user.portfolio, { symbol, shares, avgCost: stock.price, purchaseDate: new Date().toISOString() }];
+
+                    const transaction = {
+                        id: Date.now(),
+                        symbol,
+                        type: 'buy',
+                        shares,
+                        price: stock.price,
+                        total: cost,
+                        date: new Date().toISOString()
+                    };
+
+                    const updatedUser = {
+                        ...user,
+                        balance: user.balance - cost,
+                        portfolio: newPortfolio,
+                        transactions: [transaction, ...user.transactions]
+                    };
+                    
+                    updateUser(updatedUser);
+                } else {
+                    const holding = user.portfolio.find(h => h.symbol === symbol);
+                    if (!holding || holding.shares < shares) {
+                        alert('Insufficient shares');
+                        return;
+                    }
+
+                    const newPortfolio = holding.shares === shares
+                        ? user.portfolio.filter(h => h.symbol !== symbol)
+                        : user.portfolio.map(h => 
+                            h.symbol === symbol ? { ...h, shares: h.shares - shares } : h
+                          );
+
+                    const transaction = {
+                        id: Date.now(),
+                        symbol,
+                        type: 'sell',
+                        shares,
+                        price: stock.price,
+                        total: cost,
+                        date: new Date().toISOString()
+                    };
+
+                    const updatedUser = {
+                        ...user,
+                        balance: user.balance + cost,
+                        portfolio: newPortfolio,
+                        transactions: [transaction, ...user.transactions]
+                    };
+                    
+                    updateUser(updatedUser);
+                }
+
+                setShowTradeModal(false);
+            };
+
+            const handleSearch = async () => {
+                if (searchQuery) {
+                    const results = await searchStocks(searchQuery);
+                    setStocks(results);
+                } else {
+                    setStocks(POPULAR_STOCKS);
+                }
+            };
+
+            useEffect(() => {
+                handleSearch();
+            }, [searchQuery]);
+
+            return (
+                <div className="app-container">
+                    <header className="header">
+                        <div className="logo">MarketMentor</div>
+                        <div className="header-right">
+                            <div className="user-info">
+                                <div>
+                                    <div style={{fontSize: '0.85rem', color: 'var(--text-muted)'}}>Portfolio Value</div>
+                                    <div className="balance-display">${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                                </div>
+                            </div>
+                            <button className="btn btn-secondary" onClick={logout}>Logout</button>
+                        </div>
+                    </header>
+
+                    <div className="dashboard">
+                        <nav className="sidebar">
+                            <div className={`nav-item ${activeTab === 'portfolio' ? 'active' : ''}`} onClick={() => setActiveTab('portfolio')}>
+                                <span className="nav-icon">📊</span>
+                                <span>Portfolio</span>
+                            </div>
+                            <div className={`nav-item ${activeTab === 'market' ? 'active' : ''}`} onClick={() => setActiveTab('market')}>
+                                <span className="nav-icon">📈</span>
+                                <span>Market</span>
+                            </div>
+                            <div className={`nav-item ${activeTab === 'transactions' ? 'active' : ''}`} onClick={() => setActiveTab('transactions')}>
+                                <span className="nav-icon">💳</span>
+                                <span>Transactions</span>
+                            </div>
+                            <div className={`nav-item ${activeTab === 'learn' ? 'active' : ''}`} onClick={() => setActiveTab('learn')}>
+                                <span className="nav-icon">📚</span>
+                                <span>Learn</span>
+                            </div>
+                        </nav>
+
+                        <main className="main-content">
+                            {activeTab === 'portfolio' && (
+                                <PortfolioView 
+                                    user={user} 
+                                    stocks={stocks}
+                                    totalValue={totalValue}
+                                    totalGain={totalGain}
+                                    totalGainPercent={totalGainPercent}
+                                    onTrade={(stock) => {
+                                        setSelectedStock(stock);
+                                        setShowTradeModal(true);
+                                    }}
+                                />
+                            )}
+
+                            {activeTab === 'market' && (
+                                <MarketView 
+                                    stocks={stocks}
+                                    searchQuery={searchQuery}
+                                    setSearchQuery={setSearchQuery}
+                                    onTrade={(stock) => {
+                                        setSelectedStock(stock);
+                                        setShowTradeModal(true);
+                                    }}
+                                />
+                            )}
+
+                            {activeTab === 'transactions' && (
+                                <TransactionsView transactions={user.transactions} stocks={stocks} />
+                            )}
+
+                            {activeTab === 'learn' && (
+                                <LearnView />
+                            )}
+                        </main>
+                    </div>
+
+                    {showTradeModal && (
+                        <TradeModal
+                            stock={selectedStock}
+                            user={user}
+                            onClose={() => setShowTradeModal(false)}
+                            onTrade={executeTrade}
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        // ============ PORTFOLIO VIEW ============
+        const PortfolioView = ({ user, stocks, totalValue, totalGain, totalGainPercent, onTrade }) => {
+            return (
+                <div className="fade-in">
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>My Portfolio</h2>
+
+                    <div className="portfolio-grid">
+                        <div className="stat-card">
+                            <div className="stat-label">Total Value</div>
+                            <div className="stat-value">${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                            <div className={`stat-change ${totalGainPercent >= 0 ? 'positive' : 'negative'}`}>
+                                {totalGainPercent >= 0 ? '▲' : '▼'} ${Math.abs(totalGain).toLocaleString('en-US', {minimumFractionDigits: 2})} ({Math.abs(totalGainPercent).toFixed(2)}%)
+                            </div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-label">Cash Balance</div>
+                            <div className="stat-value" style={{color: 'var(--accent-blue)'}}>${user.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                            <div className="stat-change" style={{color: 'var(--text-muted)'}}>Available to invest</div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-label">Holdings</div>
+                            <div className="stat-value" style={{color: 'var(--accent-yellow)'}}>{user.portfolio.length}</div>
+                            <div className="stat-change" style={{color: 'var(--text-muted)'}}>Different stocks</div>
+                        </div>
+                    </div>
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <div className="table-title">My Holdings</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Stock</th>
+                                    <th>Shares</th>
+                                    <th>Avg Cost</th>
+                                    <th>Current Price</th>
+                                    <th>Total Value</th>
+                                    <th>Gain/Loss</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {user.portfolio.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="7" style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>
+                                            No holdings yet. Start investing to build your portfolio!
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    user.portfolio.map(holding => {
+                                        const stock = stocks.find(s => s.symbol === holding.symbol);
+                                        if (!stock) return null;
+                                        const currentValue = stock.price * holding.shares;
+                                        const costBasis = holding.avgCost * holding.shares;
+                                        const gain = currentValue - costBasis;
+                                        const gainPercent = (gain / costBasis) * 100;
+
+                                        return (
+                                            <tr key={holding.symbol}>
+                                                <td>
+                                                    <div className="stock-symbol">{holding.symbol}</div>
+                                                    <div className="stock-name">{stock.name}</div>
+                                                </td>
+                                                <td>{holding.shares}</td>
+                                                <td>${holding.avgCost.toFixed(2)}</td>
+                                                <td>${stock.price.toFixed(2)}</td>
+                                                <td>${currentValue.toFixed(2)}</td>
+                                                <td>
+                                                    <span className={gainPercent >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                                        {gainPercent >= 0 ? '▲' : '▼'} ${Math.abs(gain).toFixed(2)} ({Math.abs(gainPercent).toFixed(2)}%)
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button className="btn btn-secondary" style={{padding: '0.4rem 1rem', fontSize: '0.85rem'}} onClick={() => onTrade(stock)}>
+                                                        Trade
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ MARKET VIEW ============
+        const MarketView = ({ stocks, searchQuery, setSearchQuery, onTrade }) => {
+            return (
+                <div className="fade-in">
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Stock Market</h2>
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <div className="table-title">Available Stocks</div>
+                            <div className="search-box">
+                                <span>🔍</span>
+                                <input 
+                                    type="text" 
+                                    placeholder="Search stocks..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Stock</th>
+                                    <th>Price</th>
+                                    <th>Change</th>
+                                    <th>% Change</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {stocks.map(stock => (
+                                    <tr key={stock.symbol}>
+                                        <td>
+                                            <div className="stock-symbol">{stock.symbol}</div>
+                                            <div className="stock-name">{stock.name}</div>
+                                        </td>
+                                        <td>${stock.price.toFixed(2)}</td>
+                                        <td>
+                                            <span className={stock.change >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                                {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={stock.changePercent >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                                {stock.changePercent >= 0 ? '▲' : '▼'} {Math.abs(stock.changePercent).toFixed(2)}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button className="btn btn-primary" style={{padding: '0.4rem 1rem', fontSize: '0.85rem'}} onClick={() => onTrade(stock)}>
+                                                Trade
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ TRANSACTIONS VIEW ============
+        const TransactionsView = ({ transactions, stocks }) => {
+            return (
+                <div className="fade-in">
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Transaction History</h2>
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <div className="table-title">All Transactions</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Stock</th>
+                                    <th>Shares</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="6" style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>
+                                            No transactions yet. Make your first trade!
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    transactions.map(tx => {
+                                        const stock = stocks.find(s => s.symbol === tx.symbol);
+                                        return (
+                                            <tr key={tx.id}>
+                                                <td>{new Date(tx.date).toLocaleDateString()}</td>
+                                                <td>
+                                                    <span style={{
+                                                        padding: '0.3rem 0.8rem',
+                                                        borderRadius: '6px',
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: '600',
+                                                        background: tx.type === 'buy' ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)',
+                                                        color: tx.type === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)'
+                                                    }}>
+                                                        {tx.type.toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div className="stock-symbol">{tx.symbol}</div>
+                                                    {stock && <div className="stock-name">{stock.name}</div>}
+                                                </td>
+                                                <td>{tx.shares}</td>
+                                                <td>${tx.price.toFixed(2)}</td>
+                                                <td style={{fontWeight: '600'}}>${tx.total.toFixed(2)}</td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ LEARN VIEW ============
+        const LearnView = () => {
+            const lessons = [
+                { title: 'Introduction to Stocks', description: 'Learn what stocks are and how the market works', icon: '📖' },
+                { title: 'Understanding Portfolios', description: 'Diversification and risk management basics', icon: '📊' },
+                { title: 'Reading Financial Statements', description: 'Understand company financials and metrics', icon: '📈' },
+                { title: 'Market Analysis', description: 'Technical and fundamental analysis explained', icon: '🔍' },
+                { title: 'Investment Strategies', description: 'Long-term vs short-term investing approaches', icon: '🎯' },
+                { title: 'Dividends and Income', description: 'How to earn passive income from stocks', icon: '💰' },
+            ];
+
+            return (
+                <div className="fade-in">
+                    <h2 style={{fontSize: '2rem', marginBottom: '1rem'}}>Learning Center</h2>
+                    <p style={{color: 'var(--text-secondary)', marginBottom: '2rem'}}>
+                        Expand your investment knowledge with these educational resources
+                    </p>
+
+                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
+                        {lessons.map((lesson, index) => (
+                            <div key={index} className="stat-card" style={{cursor: 'pointer'}}>
+                                <div style={{fontSize: '3rem', marginBottom: '1rem'}}>{lesson.icon}</div>
+                                <h3 style={{marginBottom: '0.5rem'}}>{lesson.title}</h3>
+                                <p style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}>{lesson.description}</p>
+                                <button className="btn btn-secondary" style={{marginTop: '1rem', width: '100%'}}>
+                                    Start Learning
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ TRADE MODAL ============
+        const TradeModal = ({ stock, user, onClose, onTrade }) => {
+            const [tradeType, setTradeType] = useState('buy');
+            const [quantity, setQuantity] = useState(1);
+
+            const holding = user.portfolio.find(h => h.symbol === stock.symbol);
+            const maxShares = tradeType === 'sell' ? (holding ? holding.shares : 0) : Math.floor(user.balance / stock.price);
+            const total = stock.price * quantity;
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div>
+                                <div className="modal-title">{stock.symbol}</div>
+                                <div className="stock-name">{stock.name}</div>
+                            </div>
+                            <button className="close-btn" onClick={onClose}>×</button>
+                        </div>
+
+                        <div className="tabs">
+                            <button 
+                                className={`tab ${tradeType === 'buy' ? 'active' : ''}`}
+                                onClick={() => {
+                                    setTradeType('buy');
+                                    setQuantity(1);
+                                }}
+                            >
+                                Buy
+                            </button>
+                            <button 
+                                className={`tab ${tradeType === 'sell' ? 'active' : ''}`}
+                                onClick={() => {
+                                    setTradeType('sell');
+                                    setQuantity(1);
+                                }}
+                                disabled={!holding || holding.shares === 0}
+                            >
+                                Sell
+                            </button>
+                        </div>
+
+                        <div className="transaction-form">
+                            <div className="form-group">
+                                <div className="form-label">Current Price</div>
+                                <div style={{fontSize: '1.8rem', fontWeight: '700', fontFamily: 'JetBrains Mono, monospace'}}>
+                                    ${stock.price.toFixed(2)}
+                                </div>
+                                <div className={`stat-change ${stock.changePercent >= 0 ? 'positive' : 'negative'}`}>
+                                    {stock.changePercent >= 0 ? '▲' : '▼'} {Math.abs(stock.changePercent).toFixed(2)}%
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="form-label">Quantity</div>
+                                <div className="quantity-selector">
+                                    <button 
+                                        className="quantity-btn"
+                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                    >
+                                        -
+                                    </button>
+                                    <input
+                                        type="number"
+                                        className="form-input quantity-input"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(Math.max(1, Math.min(maxShares, parseInt(e.target.value) || 1)))}
+                                        min="1"
+                                        max={maxShares}
+                                    />
+                                    <button 
+                                        className="quantity-btn"
+                                        onClick={() => setQuantity(Math.min(maxShares, quantity + 1))}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                <div style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>
+                                    Max: {maxShares} shares
+                                </div>
+                            </div>
+
+                            <div className="transaction-summary">
+                                <div className="summary-row">
+                                    <span>Shares</span>
+                                    <span>{quantity}</span>
+                                </div>
+                                <div className="summary-row">
+                                    <span>Price per share</span>
+                                    <span>${stock.price.toFixed(2)}</span>
+                                </div>
+                                <div className="summary-row">
+                                    <span>Total</span>
+                                    <span>${total.toFixed(2)}</span>
+                                </div>
+                            </div>
+
+                            {tradeType === 'buy' && total > user.balance && (
+                                <div className="alert alert-error">
+                                    Insufficient funds. Available: ${user.balance.toFixed(2)}
+                                </div>
+                            )}
+
+                            {tradeType === 'sell' && quantity > (holding ? holding.shares : 0) && (
+                                <div className="alert alert-error">
+                                    Insufficient shares. You own: {holding ? holding.shares : 0}
+                                </div>
+                            )}
+
+                            <button 
+                                className={`btn ${tradeType === 'buy' ? 'btn-primary' : 'btn-danger'}`}
+                                style={{width: '100%', padding: '1rem', fontSize: '1.1rem'}}
+                                onClick={() => onTrade(stock.symbol, quantity, tradeType)}
+                                disabled={
+                                    (tradeType === 'buy' && total > user.balance) ||
+                                    (tradeType === 'sell' && quantity > (holding ? holding.shares : 0))
+                                }
+                            >
+                                {tradeType === 'buy' ? 'Buy' : 'Sell'} {quantity} share{quantity !== 1 ? 's' : ''} for ${total.toFixed(2)}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ TEACHER DASHBOARD ============
+        const TeacherDashboard = ({ teacher, logout, data, setData }) => {
+            const [activeTab, setActiveTab] = useState('overview');
+            const [showModal, setShowModal] = useState(false);
+            const [modalType, setModalType] = useState('');
+            const [selectedStock, setSelectedStock] = useState(null);
+            const [showTradeModal, setShowTradeModal] = useState(false);
+            const [stocks, setStocks] = useState(POPULAR_STOCKS);
+            const [searchQuery, setSearchQuery] = useState('');
+
+            const generateCode = () => {
+                const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+                const newCode = {
+                    code,
+                    teacherId: teacher.id,
+                    className: 'New Class',
+                    createdAt: new Date().toISOString()
+                };
+                setData({...data, teacherCodes: [...data.teacherCodes, newCode]});
+                return code;
+            };
+
+            const students = data.users.filter(u => {
+                const userCode = data.teacherCodes.find(c => c.code === u.teacherCode);
+                return userCode && userCode.teacherId === teacher.id;
+            });
+
+            const updateTeacher = (updatedTeacher) => {
+                const teachers = data.teachers.map(t => 
+                    t.id === updatedTeacher.id ? updatedTeacher : t
+                );
+                setData({...data, teachers});
+            };
+
+            const executeTeacherTrade = (symbol, shares, type) => {
+                const stock = stocks.find(s => s.symbol === symbol);
+                if (!stock) return;
+
+                const cost = stock.price * shares;
+
+                if (type === 'buy') {
+                    if (cost > teacher.balance) {
+                        alert('Insufficient funds');
+                        return;
+                    }
+
+                    const existingHolding = teacher.portfolio.find(h => h.symbol === symbol);
+                    const newPortfolio = existingHolding
+                        ? teacher.portfolio.map(h => 
+                            h.symbol === symbol 
+                                ? { ...h, shares: h.shares + shares, avgCost: ((h.avgCost * h.shares) + cost) / (h.shares + shares) }
+                                : h
+                          )
+                        : [...teacher.portfolio, { symbol, shares, avgCost: stock.price, purchaseDate: new Date().toISOString() }];
+
+                    const transaction = {
+                        id: Date.now(),
+                        symbol,
+                        type: 'buy',
+                        shares,
+                        price: stock.price,
+                        total: cost,
+                        date: new Date().toISOString()
+                    };
+
+                    const updatedTeacher = {
+                        ...teacher,
+                        balance: teacher.balance - cost,
+                        portfolio: newPortfolio,
+                        transactions: [transaction, ...teacher.transactions]
+                    };
+                    
+                    updateTeacher(updatedTeacher);
+                } else {
+                    const holding = teacher.portfolio.find(h => h.symbol === symbol);
+                    if (!holding || holding.shares < shares) {
+                        alert('Insufficient shares');
+                        return;
+                    }
+
+                    const newPortfolio = holding.shares === shares
+                        ? teacher.portfolio.filter(h => h.symbol !== symbol)
+                        : teacher.portfolio.map(h => 
+                            h.symbol === symbol ? { ...h, shares: h.shares - shares } : h
+                          );
+
+                    const transaction = {
+                        id: Date.now(),
+                        symbol,
+                        type: 'sell',
+                        shares,
+                        price: stock.price,
+                        total: cost,
+                        date: new Date().toISOString()
+                    };
+
+                    const updatedTeacher = {
+                        ...teacher,
+                        balance: teacher.balance + cost,
+                        portfolio: newPortfolio,
+                        transactions: [transaction, ...teacher.transactions]
+                    };
+                    
+                    updateTeacher(updatedTeacher);
+                }
+
+                setShowTradeModal(false);
+            };
+
+            const handleSearch = async () => {
+                if (searchQuery) {
+                    const results = await searchStocks(searchQuery);
+                    setStocks(results);
+                } else {
+                    setStocks(POPULAR_STOCKS);
+                }
+            };
+
+            useEffect(() => {
+                handleSearch();
+            }, [searchQuery]);
+
+            return (
+                <div className="app-container">
+                    <header className="header">
+                        <div className="logo">MarketMentor <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Teacher</span></div>
+                        <div className="header-right">
+                            <div style={{color: 'var(--text-secondary)'}}>
+                                {teacher.name}
+                            </div>
+                            <button className="btn btn-secondary" onClick={logout}>Logout</button>
+                        </div>
+                    </header>
+
+                    <div className="dashboard">
+                        <nav className="sidebar">
+                            <div className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
+                                <span className="nav-icon">📊</span>
+                                <span>Overview</span>
+                            </div>
+                            <div className={`nav-item ${activeTab === 'my-portfolio' ? 'active' : ''}`} onClick={() => setActiveTab('my-portfolio')}>
+                                <span className="nav-icon">💼</span>
+                                <span>My Portfolio</span>
+                            </div>
+                            <div className={`nav-item ${activeTab === 'students' ? 'active' : ''}`} onClick={() => setActiveTab('students')}>
+                                <span className="nav-icon">👥</span>
+                                <span>Students</span>
+                            </div>
+                            <div className={`nav-item ${activeTab === 'classes' ? 'active' : ''}`} onClick={() => setActiveTab('classes')}>
+                                <span className="nav-icon">🏫</span>
+                                <span>Classes</span>
+                            </div>
+                            <div className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>
+                                <span className="nav-icon">📈</span>
+                                <span>Reports</span>
+                            </div>
+                        </nav>
+
+                        <main className="main-content">
+                            {activeTab === 'overview' && (
+                                <TeacherOverview 
+                                    students={students}
+                                    generateCode={generateCode}
+                                    teacherCodes={data.teacherCodes.filter(c => c.teacherId === teacher.id)}
+                                />
+                            )}
+
+                            {activeTab === 'my-portfolio' && (
+                                <div>
+                                    <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid var(--accent-blue)'}}>
+                                        <strong>Teacher Demo Portfolio</strong>
+                                        <p style={{color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem'}}>
+                                            Use this portfolio to demonstrate trading to your students. This is separate from student portfolios.
+                                        </p>
+                                    </div>
+                                    <StudentDashboardContent 
+                                        user={teacher}
+                                        updateUser={updateTeacher}
+                                        stocks={stocks}
+                                        searchQuery={searchQuery}
+                                        setSearchQuery={setSearchQuery}
+                                        selectedStock={selectedStock}
+                                        setSelectedStock={setSelectedStock}
+                                        showTradeModal={showTradeModal}
+                                        setShowTradeModal={setShowTradeModal}
+                                        executeTrade={executeTeacherTrade}
+                                    />
+                                </div>
+                            )}
+
+                            {activeTab === 'students' && (
+                                <TeacherStudentsView 
+                                    students={students}
+                                    data={data}
+                                    setData={setData}
+                                />
+                            )}
+
+                            {activeTab === 'classes' && (
+                                <TeacherClassesView 
+                                    teacherCodes={data.teacherCodes.filter(c => c.teacherId === teacher.id)}
+                                    data={data}
+                                    setData={setData}
+                                />
+                            )}
+
+                            {activeTab === 'reports' && (
+                                <TeacherReportsView students={students} />
+                            )}
+                        </main>
+                    </div>
+
+                    {showTradeModal && (
+                        <TradeModal
+                            stock={selectedStock}
+                            user={teacher}
+                            onClose={() => setShowTradeModal(false)}
+                            onTrade={executeTeacherTrade}
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        // ============ TEACHER OVERVIEW ============
+        const TeacherOverview = ({ students, generateCode, teacherCodes }) => {
+            const [newCode, setNewCode] = useState('');
+
+            const totalValue = students.reduce((sum, student) => {
+                return sum + student.balance + student.portfolio.reduce((pSum, holding) => {
+                    const stock = POPULAR_STOCKS.find(s => s.symbol === holding.symbol);
+                    return pSum + (stock ? stock.price * holding.shares : 0);
+                }, 0);
+            }, 0);
+
+            const avgPerformance = students.length > 0 
+                ? ((totalValue - (students.length * 100000)) / (students.length * 100000) * 100).toFixed(2)
+                : 0;
+
+            return (
+                <div className="fade-in">
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Teacher Dashboard</h2>
+
+                    <div className="portfolio-grid">
+                        <div className="stat-card">
+                            <div className="stat-label">Total Students</div>
+                            <div className="stat-value" style={{color: 'var(--accent-blue)'}}>{students.length}</div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-label">Active Classes</div>
+                            <div className="stat-value" style={{color: 'var(--accent-yellow)'}}>{teacherCodes.length}</div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-label">Avg Performance</div>
+                            <div className="stat-value" style={{color: avgPerformance >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}}>
+                                {avgPerformance >= 0 ? '+' : ''}{avgPerformance}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="teacher-controls">
+                        <div className="control-card" onClick={() => {
+                            const code = generateCode();
+                            setNewCode(code);
+                        }}>
+                            <div className="control-icon">➕</div>
+                            <div className="control-title">Generate Class Code</div>
+                            <div className="control-desc">Create a new access code for students</div>
+                        </div>
+
+                        <div className="control-card">
+                            <div className="control-icon">📊</div>
+                            <div className="control-title">View Reports</div>
+                            <div className="control-desc">Access detailed performance analytics</div>
+                        </div>
+
+                        <div className="control-card">
+                            <div className="control-icon">👥</div>
+                            <div className="control-title">Manage Students</div>
+                            <div className="control-desc">View and edit student accounts</div>
+                        </div>
+
+                        <div className="control-card">
+                            <div className="control-icon">💰</div>
+                            <div className="control-title">Adjust Balances</div>
+                            <div className="control-desc">Reset or modify student portfolios</div>
+                        </div>
+                    </div>
+
+                    {newCode && (
+                        <div className="alert alert-success">
+                            <strong>New Code Generated:</strong> {newCode}
+                            <div style={{fontSize: '0.9rem', marginTop: '0.5rem'}}>
+                                Share this code with your students to let them join your class
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="table-container" style={{marginTop: '2rem'}}>
+                        <div className="table-header">
+                            <div className="table-title">Recent Activity</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Portfolio Value</th>
+                                    <th>Performance</th>
+                                    <th>Last Active</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {students.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="4" style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>
+                                            No students yet. Generate a class code to get started!
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    students.slice(0, 5).map(student => {
+                                        const portfolioValue = student.balance + student.portfolio.reduce((sum, holding) => {
+                                            const stock = POPULAR_STOCKS.find(s => s.symbol === holding.symbol);
+                                            return sum + (stock ? stock.price * holding.shares : 0);
+                                        }, 0);
+                                        const performance = ((portfolioValue - 100000) / 100000 * 100).toFixed(2);
+
+                                        return (
+                                            <tr key={student.id}>
+                                                <td>{student.name}</td>
+                                                <td>${portfolioValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                                <td>
+                                                    <span className={performance >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                                        {performance >= 0 ? '+' : ''}{performance}%
+                                                    </span>
+                                                </td>
+                                                <td>{new Date(student.createdAt).toLocaleDateString()}</td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ TEACHER STUDENTS VIEW ============
+        const TeacherStudentsView = ({ students, data, setData }) => {
+            const [selectedStudent, setSelectedStudent] = useState(null);
+
+            const resetStudent = (studentId) => {
+                if (confirm('Are you sure you want to reset this student\'s portfolio?')) {
+                    const users = data.users.map(u => 
+                        u.id === studentId 
+                            ? { ...u, balance: 100000, portfolio: [], transactions: [] }
+                            : u
+                    );
+                    setData({...data, users});
+                }
+            };
+
+            const adjustBalance = (studentId, amount) => {
+                const newAmount = prompt('Enter new balance:');
+                if (newAmount && !isNaN(newAmount)) {
+                    const users = data.users.map(u => 
+                        u.id === studentId ? { ...u, balance: parseFloat(newAmount) } : u
+                    );
+                    setData({...data, users});
+                }
+            };
+
+            return (
+                <div className="fade-in">
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Student Management</h2>
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <div className="table-title">All Students</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Portfolio Value</th>
+                                    <th>Cash Balance</th>
+                                    <th>Performance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {students.map(student => {
+                                    const portfolioValue = student.balance + student.portfolio.reduce((sum, holding) => {
+                                        const stock = POPULAR_STOCKS.find(s => s.symbol === holding.symbol);
+                                        return sum + (stock ? stock.price * holding.shares : 0);
+                                    }, 0);
+                                    const performance = ((portfolioValue - 100000) / 100000 * 100).toFixed(2);
+
+                                    return (
+                                        <tr key={student.id}>
+                                            <td>{student.name}</td>
+                                            <td style={{color: 'var(--text-muted)'}}>{student.email}</td>
+                                            <td>${portfolioValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                            <td>${student.balance.toFixed(2)}</td>
+                                            <td>
+                                                <span className={performance >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                                    {performance >= 0 ? '+' : ''}{performance}%
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div style={{display: 'flex', gap: '0.5rem'}}>
+                                                    <button 
+                                                        className="btn btn-secondary" 
+                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                        onClick={() => setSelectedStudent(student)}
+                                                    >
+                                                        View
+                                                    </button>
+                                                    <button 
+                                                        className="btn btn-secondary" 
+                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                        onClick={() => adjustBalance(student.id)}
+                                                    >
+                                                        Adjust
+                                                    </button>
+                                                    <button 
+                                                        className="btn btn-danger" 
+                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                        onClick={() => resetStudent(student.id)}
+                                                    >
+                                                        Reset
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {selectedStudent && (
+                        <div className="modal-overlay" onClick={() => setSelectedStudent(null)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <div className="modal-title">{selectedStudent.name}'s Portfolio</div>
+                                    <button className="close-btn" onClick={() => setSelectedStudent(null)}>×</button>
+                                </div>
+
+                                <div style={{marginBottom: '2rem'}}>
+                                    <div className="stat-label">Holdings</div>
+                                    {selectedStudent.portfolio.length === 0 ? (
+                                        <p style={{color: 'var(--text-muted)', padding: '2rem', textAlign: 'center'}}>
+                                            No holdings yet
+                                        </p>
+                                    ) : (
+                                        <table style={{marginTop: '1rem'}}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Stock</th>
+                                                    <th>Shares</th>
+                                                    <th>Avg Cost</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {selectedStudent.portfolio.map(holding => (
+                                                    <tr key={holding.symbol}>
+                                                        <td className="stock-symbol">{holding.symbol}</td>
+                                                        <td>{holding.shares}</td>
+                                                        <td>${holding.avgCost.toFixed(2)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <div className="stat-label">Recent Transactions</div>
+                                    {selectedStudent.transactions.length === 0 ? (
+                                        <p style={{color: 'var(--text-muted)', padding: '2rem', textAlign: 'center'}}>
+                                            No transactions yet
+                                        </p>
+                                    ) : (
+                                        <table style={{marginTop: '1rem'}}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Type</th>
+                                                    <th>Stock</th>
+                                                    <th>Shares</th>
+                                                    <th>Price</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {selectedStudent.transactions.slice(0, 10).map(tx => (
+                                                    <tr key={tx.id}>
+                                                        <td>{new Date(tx.date).toLocaleDateString()}</td>
+                                                        <td>
+                                                            <span style={{
+                                                                padding: '0.2rem 0.6rem',
+                                                                borderRadius: '4px',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: '600',
+                                                                background: tx.type === 'buy' ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)',
+                                                                color: tx.type === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)'
+                                                            }}>
+                                                                {tx.type.toUpperCase()}
+                                                            </span>
+                                                        </td>
+                                                        <td className="stock-symbol">{tx.symbol}</td>
+                                                        <td>{tx.shares}</td>
+                                                        <td>${tx.price.toFixed(2)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // ============ TEACHER CLASSES VIEW ============
+        const TeacherClassesView = ({ teacherCodes, data, setData }) => {
+            const [editingCode, setEditingCode] = useState(null);
+
+            const updateClassName = (code, newName) => {
+                const codes = data.teacherCodes.map(c => 
+                    c.code === code ? { ...c, className: newName } : c
+                );
+                setData({...data, teacherCodes: codes});
+                setEditingCode(null);
+            };
+
+            const deleteCode = (code) => {
+                if (confirm('Are you sure you want to delete this class code?')) {
+                    const codes = data.teacherCodes.filter(c => c.code !== code);
+                    setData({...data, teacherCodes: codes});
+                }
+            };
+
+            return (
+                <div className="fade-in">
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Class Management</h2>
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <div className="table-title">Active Classes</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Class Name</th>
+                                    <th>Access Code</th>
+                                    <th>Students</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {teacherCodes.map(code => {
+                                    const studentCount = data.users.filter(u => u.teacherCode === code.code).length;
+                                    
+                                    return (
+                                        <tr key={code.code}>
+                                            <td>
+                                                {editingCode === code.code ? (
+                                                    <input
+                                                        type="text"
+                                                        className="form-input"
+                                                        defaultValue={code.className}
+                                                        onBlur={(e) => updateClassName(code.code, e.target.value)}
+                                                        onKeyPress={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                updateClassName(code.code, e.target.value);
+                                                            }
+                                                        }}
+                                                        autoFocus
+                                                    />
+                                                ) : (
+                                                    <span onClick={() => setEditingCode(code.code)} style={{cursor: 'pointer'}}>
+                                                        {code.className}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <span className="stock-symbol">{code.code}</span>
+                                            </td>
+                                            <td>{studentCount}</td>
+                                            <td>{new Date(code.createdAt).toLocaleDateString()}</td>
+                                            <td>
+                                                <div style={{display: 'flex', gap: '0.5rem'}}>
+                                                    <button 
+                                                        className="btn btn-secondary" 
+                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                        onClick={() => setEditingCode(code.code)}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button 
+                                                        className="btn btn-danger" 
+                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                        onClick={() => deleteCode(code.code)}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ TEACHER REPORTS VIEW ============
+        const TeacherReportsView = ({ students }) => {
+            const topPerformers = [...students]
+                .map(student => {
+                    const portfolioValue = student.balance + student.portfolio.reduce((sum, holding) => {
+                        const stock = POPULAR_STOCKS.find(s => s.symbol === holding.symbol);
+                        return sum + (stock ? stock.price * holding.shares : 0);
+                    }, 0);
+                    const performance = ((portfolioValue - 100000) / 100000 * 100);
+                    return { ...student, portfolioValue, performance };
+                })
+                .sort((a, b) => b.performance - a.performance)
+                .slice(0, 10);
+
+            return (
+                <div className="fade-in">
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Performance Reports</h2>
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <div className="table-title">Top Performers</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Student</th>
+                                    <th>Portfolio Value</th>
+                                    <th>Performance</th>
+                                    <th>Holdings</th>
+                                    <th>Transactions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {topPerformers.map((student, index) => (
+                                    <tr key={student.id}>
+                                        <td>
+                                            <span style={{
+                                                fontSize: '1.5rem',
+                                                fontWeight: '700',
+                                                color: index === 0 ? 'var(--accent-yellow)' : 
+                                                       index === 1 ? 'var(--text-secondary)' : 
+                                                       index === 2 ? '#cd7f32' : 'var(--text-muted)'
+                                            }}>
+                                                {index + 1}
+                                            </span>
+                                        </td>
+                                        <td>{student.name}</td>
+                                        <td>${student.portfolioValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        <td>
+                                            <span className={student.performance >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                                {student.performance >= 0 ? '+' : ''}{student.performance.toFixed(2)}%
+                                            </span>
+                                        </td>
+                                        <td>{student.portfolio.length}</td>
+                                        <td>{student.transactions.length}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ RENDER APP ============
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
