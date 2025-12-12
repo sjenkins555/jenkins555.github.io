@@ -739,7 +739,10 @@
 
         // ============ FINNHUB.IO STOCK API - REAL PRICES! ============
         // Get your free API key at: https://finnhub.io/register
-        const FINNHUB_API_KEY = 'd4tjam9r01qnn6llab20d4tjam9r01qnn6llab2g';  // Replace with your actual key!
+        // Fallback for teacher views that need stock prices
+        const POPULAR_STOCKS = DEFAULT_SYMBOLS.map(s => ({symbol: s, name: s, price: 100, change: 0, changePercent: 0}));
+        
+        const FINNHUB_API_KEY = 'YOUR_API_KEY_HERE';  // Replace with your actual key!
         
         const DEFAULT_SYMBOLS = [
             'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX',
@@ -831,19 +834,6 @@
             }
         };
 
-        const fetchStockPrice = async (symbol) => {
-            // Mock function - replace with real API call
-            await new Promise(resolve => setTimeout(resolve, 500));
-            const stock = POPULAR_STOCKS.find(s => s.symbol === symbol);
-            return stock || { symbol, name: 'Unknown', price: 100, change: 0, changePercent: 0 };
-        };
-
-        const searchStocks = async (query) => {
-            await new Promise(resolve => setTimeout(resolve, 300));
-            return POPULAR_STOCKS.filter(stock => 
-                stock.symbol.toLowerCase().includes(query.toLowerCase()) ||
-                stock.name.toLowerCase().includes(query.toLowerCase())
-            );
         };
 
         // ============ MAIN APP COMPONENT ============
