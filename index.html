@@ -643,6 +643,10 @@
             .portfolio-grid {
                 grid-template-columns: 1fr;
             }
+
+            .market-movers-grid {
+                grid-template-columns: 1fr !important;
+            }
         }
 
         /* Loading Spinner */
@@ -721,12 +725,27 @@
         
         const DEFAULT_SYMBOLS = [
             'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX',
-            'JPM', 'BAC', 'V', 'MA', 'WMT', 'HD', 'DIS', 'NKE', 'AMD', 'INTC'
+            'JPM', 'BAC', 'V', 'MA', 'WMT', 'HD', 'DIS', 'NKE', 'AMD', 'INTC',
+            'PYPL', 'UBER', 'ABNB', 'COIN', 'SQ', 'SHOP'
         ];
 
         // Fetch real stock price from Finnhub
         const fetchStockPrice = async (symbol) => {
             try {
+                // Check if API key is set
+                if (FINNHUB_API_KEY === 'YOUR_API_KEY_HERE') {
+                    console.warn('Finnhub API key not set! Using mock data.');
+                    return {
+                        symbol: symbol,
+                        name: symbol,
+                        price: 100 + Math.random() * 50,
+                        change: (Math.random() - 0.5) * 10,
+                        changePercent: (Math.random() - 0.5) * 5,
+                        volume: 0,
+                        error: false
+                    };
+                }
+
                 const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
                 const response = await fetch(url);
                 const data = await response.json();
@@ -778,6 +797,18 @@
                 return stocks;
             }
             
+            // First, try direct symbol lookup (most reliable)
+            const cleanQuery = query.trim().toUpperCase();
+            try {
+                const directStock = await fetchStockPrice(cleanQuery);
+                if (!directStock.error) {
+                    return [directStock];
+                }
+            } catch (error) {
+                console.log('Direct lookup failed, trying search...');
+            }
+            
+            // If direct lookup fails, try search endpoint
             try {
                 const url = `https://finnhub.io/api/v1/search?q=${query}&token=${FINNHUB_API_KEY}`;
                 const response = await fetch(url);
@@ -795,7 +826,9 @@
                 const stocks = [];
                 for (const symbol of symbols) {
                     const stock = await fetchStockPrice(symbol);
-                    stocks.push(stock);
+                    if (!stock.error) {
+                        stocks.push(stock);
+                    }
                     await new Promise(resolve => setTimeout(resolve, 200));
                 }
                 
@@ -1051,7 +1084,7 @@
         };
 
         // ============ STUDENT DASHBOARD CONTENT (Reusable) ============
-        const StudentDashboardContent = ({ user, updateUser, stocks, searchQuery, setSearchQuery, selectedStock, setSelectedStock, showTradeModal, setShowTradeModal, executeTrade }) => {
+        const StudentDashboardContent = ({ user, updateUser, stocks, searchQuery, setSearchQuery, selectedStock, setSelectedStock, showTradeModal, setShowTradeModal, executeTrade, onSearch, loading }) => {
             const [activeTab, setActiveTab] = useState('portfolio');
 
             const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
@@ -1099,6 +1132,8 @@
                                 setSelectedStock(stock);
                                 setShowTradeModal(true);
                             }}
+                            onSearch={onSearch}
+                            loading={loading}
                         />
                     )}
 
@@ -1289,6 +1324,8 @@
                                         setSelectedStock(stock);
                                         setShowTradeModal(true);
                                     }}
+                                    onSearch={handleSearch}
+                                    loading={loading}
                                 />
                             )}
 
@@ -1407,65 +1444,224 @@
         };
 
         // ============ MARKET VIEW ============
-        const MarketView = ({ stocks, searchQuery, setSearchQuery, onTrade }) => {
+        const MarketView = ({ stocks, searchQuery, setSearchQuery, onTrade, onSearch, loading }) => {
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter') {
+                    onSearch();
+                }
+            };
+
+            const handleClear = () => {
+                setSearchQuery('');
+                onSearch();
+            };
+
+            // Calculate market movers (only show when not searching)
+            const topGainers = !searchQuery && stocks.length > 0 
+                ? [...stocks].sort((a, b) => b.changePercent - a.changePercent).slice(0, 5)
+                : [];
+            
+            const topLosers = !searchQuery && stocks.length > 0
+                ? [...stocks].sort((a, b) => a.changePercent - b.changePercent).slice(0, 5)
+                : [];
+
             return (
                 <div className="fade-in">
                     <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Market</h2>
                     
+                    {FINNHUB_API_KEY === 'YOUR_API_KEY_HERE' && (
+                        <div className="alert alert-info" style={{marginBottom: '1.5rem'}}>
+                            <strong>⚠️ API Key Required:</strong> Add your Finnhub API key to line 742 to see real-time stock prices. 
+                            <a href="https://finnhub.io/register" target="_blank" style={{color: 'var(--accent-green)', marginLeft: '0.5rem'}}>
+                                Get free API key →
+                            </a>
+                        </div>
+                    )}
+
+                    {FINNHUB_API_KEY !== 'YOUR_API_KEY_HERE' && (
+                        <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--accent-green)'}}>
+                            <p style={{color: 'var(--accent-green)', fontSize: '0.9rem'}}>
+                                ✅ <strong>Live Data Active</strong> - Showing real-time stock prices from Finnhub
+                            </p>
+                        </div>
+                    )}
+
+                    <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--border-highlight)'}}>
+                        <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>
+                            💡 <strong>Tip:</strong> Type any stock symbol (like TSLA, GME, NVDA, AAPL) and click Search to find real-time prices!
+                        </p>
+                    </div>
+
                     <div className="search-bar">
                         <input
                             type="text"
                             className="form-input search-input"
-                            placeholder="Search stocks..."
+                            placeholder="Search any stock symbol (e.g., TSLA, AAPL, NVDA, GME, DIS)..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyPress={handleKeyPress}
                         />
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={onSearch}
+                            disabled={loading}
+                        >
+                            {loading ? 'Searching...' : 'Search'}
+                        </button>
+                        {searchQuery && (
+                            <button 
+                                className="btn btn-secondary" 
+                                onClick={handleClear}
+                                disabled={loading}
+                            >
+                                Clear
+                            </button>
+                        )}
                     </div>
 
-                    <div className="table-container">
-                        <div className="table-header">
-                            <div className="table-title">Available Stocks</div>
+                    {loading && (
+                        <div style={{textAlign: 'center', padding: '2rem'}}>
+                            <div className="spinner"></div>
+                            <p style={{color: 'var(--text-muted)', marginTop: '1rem'}}>Loading stocks...</p>
                         </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Symbol</th>
-                                    <th>Name</th>
-                                    <th>Price</th>
-                                    <th>Change</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {stocks.filter(stock => 
-                                    stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                    stock.name.toLowerCase().includes(searchQuery.toLowerCase())
-                                ).map(stock => (
-                                    <tr key={stock.symbol}>
-                                        <td className="stock-symbol">{stock.symbol}</td>
-                                        <td>{stock.name}</td>
-                                        <td>${stock.price.toFixed(2)}</td>
-                                        <td>
-                                            <div className={stock.change >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                ${Math.abs(stock.change).toFixed(2)}
-                                                <br/>
-                                                ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <button 
-                                                className="btn btn-primary" 
-                                                style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                onClick={() => onTrade(stock)}
-                                            >
-                                                Trade
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    )}
+
+                    {!loading && !searchQuery && (
+                        <>
+                            <div className="market-movers-grid" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem'}}>
+                                {/* Top Gainers */}
+                                <div className="table-container">
+                                    <div className="table-header">
+                                        <div className="table-title">🚀 Top Gainers</div>
+                                    </div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Symbol</th>
+                                                <th>Price</th>
+                                                <th>Change</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {topGainers.map(stock => (
+                                                <tr key={stock.symbol}>
+                                                    <td className="stock-symbol">{stock.symbol}</td>
+                                                    <td>${stock.price.toFixed(2)}</td>
+                                                    <td>
+                                                        <div className="stat-change positive">
+                                                            +{stock.changePercent.toFixed(2)}%
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <button 
+                                                            className="btn btn-primary" 
+                                                            style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                            onClick={() => onTrade(stock)}
+                                                        >
+                                                            Trade
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Top Losers */}
+                                <div className="table-container">
+                                    <div className="table-header">
+                                        <div className="table-title">📉 Top Losers</div>
+                                    </div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Symbol</th>
+                                                <th>Price</th>
+                                                <th>Change</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {topLosers.map(stock => (
+                                                <tr key={stock.symbol}>
+                                                    <td className="stock-symbol">{stock.symbol}</td>
+                                                    <td>${stock.price.toFixed(2)}</td>
+                                                    <td>
+                                                        <div className="stat-change negative">
+                                                            {stock.changePercent.toFixed(2)}%
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <button 
+                                                            className="btn btn-primary" 
+                                                            style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                            onClick={() => onTrade(stock)}
+                                                        >
+                                                            Trade
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {!loading && (
+                        <div className="table-container">
+                            <div className="table-header">
+                                <div className="table-title">
+                                    {searchQuery ? `Search Results for "${searchQuery}"` : 'Popular Stocks'}
+                                </div>
+                            </div>
+                            {stocks.length === 0 ? (
+                                <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
+                                    <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>No stocks found</p>
+                                    <p>Try searching for a stock symbol like TSLA, AAPL, NVDA, GME, or DIS</p>
+                                </div>
+                            ) : (
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>Name</th>
+                                            <th>Price</th>
+                                            <th>Change</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {stocks.map(stock => (
+                                            <tr key={stock.symbol}>
+                                                <td className="stock-symbol">{stock.symbol}</td>
+                                                <td>{stock.name}</td>
+                                                <td>${stock.price.toFixed(2)}</td>
+                                                <td>
+                                                    <div className={stock.change >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                                        ${Math.abs(stock.change).toFixed(2)}
+                                                        <br/>
+                                                        ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <button 
+                                                        className="btn btn-primary" 
+                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                        onClick={() => onTrade(stock)}
+                                                    >
+                                                        Trade
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    )}
                 </div>
             );
         };
@@ -1892,6 +2088,8 @@
                                         showTradeModal={showTradeModal}
                                         setShowTradeModal={setShowTradeModal}
                                         executeTrade={executeTeacherTrade}
+                                        onSearch={handleSearch}
+                                        loading={loading}
                                     />
                                 </div>
                             )}
