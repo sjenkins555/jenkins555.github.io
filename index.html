@@ -804,7 +804,148 @@
             }
         };
 
+        // Fetch historical stock price from Finnhub
+        const fetchHistoricalPrice = async (symbol, yearsAgo) => {
+            try {
+                // Check if API key is set
+                if (FINNHUB_API_KEY === 'YOUR_API_KEY_HERE') {
+                    // Mock historical data - simulate growth
+                    const mockGrowthRate = 0.08; // 8% annual growth
+                    const currentMockPrice = 100 + Math.random() * 50;
+                    const historicalMockPrice = currentMockPrice / Math.pow(1 + mockGrowthRate, yearsAgo);
+                    return {
+                        price: historicalMockPrice,
+                        date: new Date(Date.now() - yearsAgo * 365.25 * 24 * 60 * 60 * 1000),
+                        available: true,
+                        mock: true
+                    };
+                }
+
+                const now = Math.floor(Date.now() / 1000);
+                const secondsPerYear = 365.25 * 24 * 60 * 60;
+                const then = now - (yearsAgo * secondsPerYear);
+                
+                // Get daily candles (OHLC data)
+                const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${then}&to=${then + (7 * 24 * 60 * 60)}&token=${FINNHUB_API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.s === 'ok' && data.c && data.c.length > 0) {
+                    // Return the closing price from the first available day
+                    return {
+                        price: data.c[0],
+                        date: new Date(data.t[0] * 1000),
+                        available: true
+                    };
+                } else {
+                    // Stock wasn't trading that far back
+                    return { available: false };
+                }
+            } catch (error) {
+                console.error(`Error fetching historical price for ${symbol}:`, error);
+                return { available: false };
+            }
+        };
+
+        // Calculate portfolio historical returns
+        const calculateHistoricalReturns = async (portfolio, currentStocks, yearsAgo) => {
+            let totalInvestedThen = 0;
+            let totalValueNow = 0;
+            let stocksWithData = 0;
+            
+            for (const holding of portfolio) {
+                const currentStock = currentStocks.find(s => s.symbol === holding.symbol);
+                if (!currentStock) continue;
+                
+                const historicalData = await fetchHistoricalPrice(holding.symbol, yearsAgo);
+                
+                if (historicalData.available) {
+                    const investmentAmount = holding.shares * holding.avgCost;
+                    const sharesThen = investmentAmount / historicalData.price;
+                    const valueNow = sharesThen * currentStock.price;
+                    
+                    totalInvestedThen += investmentAmount;
+                    totalValueNow += valueNow;
+                    stocksWithData++;
+                }
+                
+                // Small delay to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            if (stocksWithData === 0) {
+                return null;
+            }
+            
+            const totalReturn = totalValueNow - totalInvestedThen;
+            const returnPercent = (totalReturn / totalInvestedThen) * 100;
+            const annualizedReturn = Math.pow(totalValueNow / totalInvestedThen, 1 / yearsAgo) - 1;
+            
+            return {
+                invested: totalInvestedThen,
+                currentValue: totalValueNow,
+                totalReturn: totalReturn,
+                returnPercent: returnPercent,
+                annualizedReturn: annualizedReturn * 100,
+                stocksAnalyzed: stocksWithData,
+                yearsAgo: yearsAgo
+            };
+        };
+
         // Search stocks on Finnhub
+        const searchStocks = async (query) => {
+            if (!query || query.length < 1) {
+                // Load default stocks
+                const stocks = [];
+                for (const symbol of DEFAULT_SYMBOLS) {
+                    const stock = await fetchStockPrice(symbol);
+                    stocks.push(stock);
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                return stocks;
+            }
+            
+            // First, try direct symbol lookup (most reliable)
+            const cleanQuery = query.trim().toUpperCase();
+            try {
+                const directStock = await fetchStockPrice(cleanQuery);
+                if (!directStock.error) {
+                    return [directStock];
+                }
+            } catch (error) {
+                console.log('Direct lookup failed, trying search...');
+            }
+            
+            // If direct lookup fails, try search endpoint
+            try {
+                const url = `https://finnhub.io/api/v1/search?q=${query}&token=${FINNHUB_API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!data.result || data.result.length === 0) {
+                    return [];
+                }
+                
+                const symbols = data.result
+                    .filter(r => r.type === 'Common Stock')
+                    .map(r => r.symbol)
+                    .slice(0, 10);
+                
+                const stocks = [];
+                for (const symbol of symbols) {
+                    const stock = await fetchStockPrice(symbol);
+                    if (!stock.error) {
+                        stocks.push(stock);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                return stocks;
+            } catch (error) {
+                console.error('Search error:', error);
+                return [];
+            }
+        };
         const searchStocks = async (query) => {
             if (!query || query.length < 1) {
                 // Load default stocks
@@ -866,7 +1007,12 @@
             const [currentUser, setCurrentUser] = useState(null);
             const [isTeacher, setIsTeacher] = useState(false);
             const [view, setView] = useState('login');
-            const [data, setData] = useState(loadData());
+            const [data, setData] = useState(() => {
+                const loaded = loadData();
+                // Save immediately after migration
+                saveData(loaded);
+                return loaded;
+            });
 
             useEffect(() => {
                 saveData(data);
@@ -1382,6 +1528,35 @@
 
         // ============ PORTFOLIO VIEW ============
         const PortfolioView = ({ user, stocks, totalValue, totalGain, totalGainPercent, onTrade }) => {
+            const [historicalPeriod, setHistoricalPeriod] = useState(null);
+            const [historicalData, setHistoricalData] = useState(null);
+            const [loadingHistorical, setLoadingHistorical] = useState(false);
+
+            const timePeriods = [
+                { label: 'Current', years: 0 },
+                { label: '1 Year', years: 1 },
+                { label: '2 Years', years: 2 },
+                { label: '5 Years', years: 5 },
+                { label: '10 Years', years: 10 },
+                { label: '20 Years', years: 20 },
+                { label: '30 Years', years: 30 }
+            ];
+
+            const loadHistoricalReturns = async (years) => {
+                if (years === 0) {
+                    setHistoricalPeriod(0);
+                    setHistoricalData(null);
+                    return;
+                }
+
+                setLoadingHistorical(true);
+                setHistoricalPeriod(years);
+                
+                const data = await calculateHistoricalReturns(user.portfolio, stocks, years);
+                setHistoricalData(data);
+                setLoadingHistorical(false);
+            };
+
             return (
                 <div className="fade-in">
                     <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Portfolio Overview</h2>
@@ -1391,6 +1566,117 @@
                             📌 <strong>Note:</strong> Portfolio values reflect stock price changes only. Dividends are not currently included in calculations.
                         </p>
                     </div>
+
+                    {/* Time Period Buttons */}
+                    {user.portfolio.length > 0 && (
+                        <div style={{marginBottom: '2rem'}}>
+                            <div style={{marginBottom: '1rem'}}>
+                                <strong style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>
+                                    📊 Historical Performance Calculator
+                                </strong>
+                                <p style={{color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.3rem'}}>
+                                    See what your portfolio would be worth if you invested the same amounts years ago
+                                </p>
+                            </div>
+                            <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
+                                {timePeriods.map(period => (
+                                    <button
+                                        key={period.years}
+                                        className={`btn ${historicalPeriod === period.years ? 'btn-primary' : 'btn-secondary'}`}
+                                        style={{padding: '0.5rem 1rem', fontSize: '0.85rem'}}
+                                        onClick={() => loadHistoricalReturns(period.years)}
+                                        disabled={loadingHistorical}
+                                    >
+                                        {period.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Historical Returns Display */}
+                    {loadingHistorical && (
+                        <div style={{textAlign: 'center', padding: '2rem', background: 'var(--bg-card)', borderRadius: '12px', marginBottom: '2rem', border: '1px solid var(--border)'}}>
+                            <div className="spinner"></div>
+                            <p style={{color: 'var(--text-muted)', marginTop: '1rem'}}>
+                                Calculating {historicalPeriod}-year returns...
+                            </p>
+                        </div>
+                    )}
+
+                    {!loadingHistorical && historicalData && (
+                        <div style={{
+                            background: 'linear-gradient(135deg, var(--bg-card) 0%, var(--bg-tertiary) 100%)',
+                            borderRadius: '12px',
+                            padding: '1.5rem',
+                            marginBottom: '2rem',
+                            border: '2px solid var(--accent-green)',
+                            boxShadow: '0 8px 24px rgba(0, 255, 136, 0.1)'
+                        }}>
+                            <h3 style={{marginBottom: '1rem', color: 'var(--accent-green)'}}>
+                                📈 {historicalPeriod}-Year Historical Returns
+                            </h3>
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem'}}>
+                                <div>
+                                    <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>
+                                        Amount Invested
+                                    </div>
+                                    <div style={{fontSize: '1.3rem', fontWeight: '700', fontFamily: 'JetBrains Mono, monospace'}}>
+                                        ${historicalData.invested.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>
+                                        Current Value
+                                    </div>
+                                    <div style={{fontSize: '1.3rem', fontWeight: '700', fontFamily: 'JetBrains Mono, monospace', color: 'var(--accent-green)'}}>
+                                        ${historicalData.currentValue.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>
+                                        Total Return
+                                    </div>
+                                    <div style={{
+                                        fontSize: '1.3rem',
+                                        fontWeight: '700',
+                                        fontFamily: 'JetBrains Mono, monospace',
+                                        color: historicalData.totalReturn >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'
+                                    }}>
+                                        {historicalData.totalReturn >= 0 ? '+' : ''}${historicalData.totalReturn.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                                        <span style={{fontSize: '0.9rem', marginLeft: '0.5rem'}}>
+                                            ({historicalData.returnPercent >= 0 ? '+' : ''}{historicalData.returnPercent.toFixed(2)}%)
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>
+                                        Annualized Return
+                                    </div>
+                                    <div style={{
+                                        fontSize: '1.3rem',
+                                        fontWeight: '700',
+                                        fontFamily: 'JetBrains Mono, monospace',
+                                        color: historicalData.annualizedReturn >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'
+                                    }}>
+                                        {historicalData.annualizedReturn >= 0 ? '+' : ''}{historicalData.annualizedReturn.toFixed(2)}%/yr
+                                    </div>
+                                </div>
+                            </div>
+                            <p style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem', fontStyle: 'italic'}}>
+                                * Analyzed {historicalData.stocksAnalyzed} of {user.portfolio.length} stocks. Some stocks may not have been publicly traded {historicalPeriod} years ago.
+                            </p>
+                        </div>
+                    )}
+
+                    {!loadingHistorical && historicalPeriod !== null && historicalPeriod !== 0 && !historicalData && (
+                        <div className="alert alert-info" style={{marginBottom: '2rem'}}>
+                            <strong>No Historical Data Available</strong>
+                            <p style={{marginTop: '0.5rem', fontSize: '0.9rem'}}>
+                                None of the stocks in your portfolio were publicly traded {historicalPeriod} years ago. Try a shorter time period.
+                            </p>
+                        </div>
+                    )}
 
                     <div className="portfolio-grid">
                         <div className="stat-card">
@@ -1510,35 +1796,12 @@
             return (
                 <div className="fade-in">
                     <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Market</h2>
-                    
-                    {FINNHUB_API_KEY === 'YOUR_API_KEY_HERE' && (
-                        <div className="alert alert-info" style={{marginBottom: '1.5rem'}}>
-                            <strong>⚠️ API Key Required:</strong> Add your Finnhub API key to line 742 to see real-time stock prices. 
-                            <a href="https://finnhub.io/register" target="_blank" style={{color: 'var(--accent-green)', marginLeft: '0.5rem'}}>
-                                Get free API key →
-                            </a>
-                        </div>
-                    )}
-
-                    {FINNHUB_API_KEY !== 'YOUR_API_KEY_HERE' && (
-                        <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--accent-green)'}}>
-                            <p style={{color: 'var(--accent-green)', fontSize: '0.9rem'}}>
-                                ✅ <strong>Live Data Active</strong> - Showing real-time stock prices from Finnhub
-                            </p>
-                        </div>
-                    )}
-
-                    <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--border-highlight)'}}>
-                        <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>
-                            💡 <strong>Tip:</strong> Type any stock symbol (like TSLA, GME, NVDA, AAPL) and click Search to find real-time prices!
-                        </p>
-                    </div>
 
                     <div className="search-bar">
                         <input
                             type="text"
                             className="form-input search-input"
-                            placeholder="Search any stock symbol (e.g., TSLA, AAPL, NVDA, GME, DIS)..."
+                            placeholder="Search stocks by symbol (e.g., TSLA, AAPL, NVDA, GME)..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyPress={handleKeyPress}
@@ -1704,6 +1967,19 @@
                             )}
                         </div>
                     )}
+
+                    {/* API Status - Bottom of page */}
+                    <div style={{marginTop: '3rem', padding: '0.75rem', textAlign: 'center', borderTop: '1px solid var(--border)'}}>
+                        {FINNHUB_API_KEY === 'YOUR_API_KEY_HERE' ? (
+                            <p style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>
+                                ⚠️ Using mock data. <a href="https://finnhub.io/register" target="_blank" style={{color: 'var(--accent-blue)'}}>Add API key</a> to line 742 for real-time prices.
+                            </p>
+                        ) : (
+                            <p style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>
+                                ✅ Live market data from Finnhub
+                            </p>
+                        )}
+                    </div>
                 </div>
             );
         };
