@@ -704,7 +704,27 @@
         const loadData = () => {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
-                return JSON.parse(stored);
+                const data = JSON.parse(stored);
+                
+                // Migration: Add default research links to existing classes that don't have them
+                if (data.teacherCodes) {
+                    data.teacherCodes = data.teacherCodes.map(code => {
+                        if (!code.researchLinks) {
+                            return {
+                                ...code,
+                                researchLinks: [
+                                    { name: 'Yahoo Finance', url: 'https://finance.yahoo.com', description: 'Stock quotes, news, and financial data' },
+                                    { name: 'Investopedia', url: 'https://www.investopedia.com', description: 'Financial education and definitions' },
+                                    { name: 'MarketWatch', url: 'https://www.marketwatch.com', description: 'Market news and stock analysis' },
+                                    { name: 'SEC Filings (EDGAR)', url: 'https://www.sec.gov/edgar/searchedgar/companysearch.html', description: 'Official company filings and reports' }
+                                ]
+                            };
+                        }
+                        return code;
+                    });
+                }
+                
+                return data;
             }
             return {
                 users: [],
@@ -1084,7 +1104,7 @@
         };
 
         // ============ STUDENT DASHBOARD CONTENT (Reusable) ============
-        const StudentDashboardContent = ({ user, updateUser, stocks, searchQuery, setSearchQuery, selectedStock, setSelectedStock, showTradeModal, setShowTradeModal, executeTrade, onSearch, loading }) => {
+        const StudentDashboardContent = ({ user, updateUser, stocks, searchQuery, setSearchQuery, selectedStock, setSelectedStock, showTradeModal, setShowTradeModal, executeTrade, onSearch, loading, setStocks, setLoading }) => {
             const [activeTab, setActiveTab] = useState('portfolio');
 
             const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
@@ -1134,6 +1154,8 @@
                             }}
                             onSearch={onSearch}
                             loading={loading}
+                            setStocks={setStocks}
+                            setLoading={setLoading}
                         />
                     )}
 
@@ -1152,6 +1174,7 @@
             const [stocks, setStocks] = useState([]);
             const [searchQuery, setSearchQuery] = useState('');
             const [loading, setLoading] = useState(false);
+            const [data, setData] = useState(loadData());
 
             // Load stocks only after dashboard mounts (after login!)
             useEffect(() => {
@@ -1167,6 +1190,10 @@
                 };
                 loadInitialStocks();
             }, []);
+
+            // Get the student's class research links
+            const teacherCode = data.teacherCodes.find(c => c.code === user.teacherCode);
+            const researchLinks = teacherCode?.researchLinks || [];
 
 
             const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
@@ -1294,9 +1321,9 @@
                                 <span className="nav-icon">💳</span>
                                 <span>Transactions</span>
                             </div>
-                            <div className={`nav-item ${activeTab === 'learn' ? 'active' : ''}`} onClick={() => setActiveTab('learn')}>
-                                <span className="nav-icon">📚</span>
-                                <span>Learn</span>
+                            <div className={`nav-item ${activeTab === 'research' ? 'active' : ''}`} onClick={() => setActiveTab('research')}>
+                                <span className="nav-icon">🔍</span>
+                                <span>Research</span>
                             </div>
                         </nav>
 
@@ -1326,6 +1353,8 @@
                                     }}
                                     onSearch={handleSearch}
                                     loading={loading}
+                                    setStocks={setStocks}
+                                    setLoading={setLoading}
                                 />
                             )}
 
@@ -1333,8 +1362,8 @@
                                 <TransactionsView transactions={user.transactions} stocks={stocks} />
                             )}
 
-                            {activeTab === 'learn' && (
-                                <LearnView />
+                            {activeTab === 'research' && (
+                                <ResearchView links={researchLinks} />
                             )}
                         </main>
                     </div>
@@ -1357,6 +1386,12 @@
                 <div className="fade-in">
                     <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Portfolio Overview</h2>
                     
+                    <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--border-highlight)'}}>
+                        <p style={{color: 'var(--text-secondary)', fontSize: '0.85rem'}}>
+                            📌 <strong>Note:</strong> Portfolio values reflect stock price changes only. Dividends are not currently included in calculations.
+                        </p>
+                    </div>
+
                     <div className="portfolio-grid">
                         <div className="stat-card">
                             <div className="stat-label">Total Value</div>
@@ -1444,16 +1479,23 @@
         };
 
         // ============ MARKET VIEW ============
-        const MarketView = ({ stocks, searchQuery, setSearchQuery, onTrade, onSearch, loading }) => {
+        const MarketView = ({ stocks, searchQuery, setSearchQuery, onTrade, onSearch, loading, setStocks, setLoading }) => {
             const handleKeyPress = (e) => {
                 if (e.key === 'Enter') {
                     onSearch();
                 }
             };
 
-            const handleClear = () => {
+            const handleClear = async () => {
                 setSearchQuery('');
-                onSearch();
+                setLoading(true);
+                try {
+                    const defaultStocks = await searchStocks('');
+                    setStocks(defaultStocks);
+                } catch (error) {
+                    console.error('Error loading default stocks:', error);
+                }
+                setLoading(false);
             };
 
             // Calculate market movers (only show when not searching)
@@ -1718,50 +1760,66 @@
             );
         };
 
-        // ============ LEARN VIEW ============
-        const LearnView = () => {
+        // ============ RESEARCH VIEW ============
+        const ResearchView = ({ links }) => {
             return (
                 <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Learn to Invest</h2>
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Research Resources</h2>
                     
-                    <div className="portfolio-grid">
-                        <div className="stat-card">
-                            <div className="control-icon">📚</div>
-                            <div className="control-title">Basics</div>
-                            <p className="control-desc">Understand stocks, bonds, and market fundamentals</p>
-                        </div>
-                        
-                        <div className="stat-card">
-                            <div className="control-icon">📊</div>
-                            <div className="control-title">Analysis</div>
-                            <p className="control-desc">Learn to read financial statements and charts</p>
-                        </div>
-                        
-                        <div className="stat-card">
-                            <div className="control-icon">💡</div>
-                            <div className="control-title">Strategies</div>
-                            <p className="control-desc">Discover different investment approaches</p>
-                        </div>
+                    <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid var(--border-highlight)'}}>
+                        <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>
+                            📚 Your teacher has curated these resources to help you research stocks and learn about investing.
+                        </p>
                     </div>
+
+                    {links.length === 0 ? (
+                        <div className="table-container">
+                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
+                                <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>No research links yet</p>
+                                <p>Your teacher will add helpful resources soon!</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="portfolio-grid">
+                            {links.map((link, index) => (
+                                <a 
+                                    key={index}
+                                    href={link.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    style={{textDecoration: 'none'}}
+                                >
+                                    <div className="stat-card" style={{cursor: 'pointer', height: '100%'}}>
+                                        <div className="control-icon">🔗</div>
+                                        <div className="control-title" style={{color: 'var(--accent-green)', marginBottom: '0.5rem'}}>
+                                            {link.name}
+                                        </div>
+                                        <p className="control-desc" style={{color: 'var(--text-secondary)'}}>
+                                            {link.description}
+                                        </p>
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+                    )}
 
                     <div className="table-container" style={{marginTop: '2rem'}}>
                         <div className="table-header">
-                            <div className="table-title">Key Concepts</div>
+                            <div className="table-title">Research Tips</div>
                         </div>
                         <div style={{padding: '2rem'}}>
-                            <h3 style={{marginBottom: '1rem'}}>What is a Stock?</h3>
+                            <h3 style={{marginBottom: '1rem'}}>How to Research a Stock</h3>
                             <p style={{marginBottom: '1rem', lineHeight: '1.6', color: 'var(--text-secondary)'}}>
-                                A stock represents ownership in a company. When you buy a stock, you become a shareholder and own a small piece of that company.
+                                1. <strong>Check the financials:</strong> Look at revenue, profit margins, and debt levels
                             </p>
-                            
-                            <h3 style={{marginBottom: '1rem', marginTop: '2rem'}}>Risk vs. Reward</h3>
                             <p style={{marginBottom: '1rem', lineHeight: '1.6', color: 'var(--text-secondary)'}}>
-                                Higher potential returns usually come with higher risk. Diversification helps manage risk by spreading investments across different stocks.
+                                2. <strong>Read the news:</strong> Stay updated on company announcements and industry trends
                             </p>
-
-                            <h3 style={{marginBottom: '1rem', marginTop: '2rem'}}>Long-term Thinking</h3>
+                            <p style={{marginBottom: '1rem', lineHeight: '1.6', color: 'var(--text-secondary)'}}>
+                                3. <strong>Compare competitors:</strong> How does the company stack up against rivals?
+                            </p>
                             <p style={{lineHeight: '1.6', color: 'var(--text-secondary)'}}>
-                                Successful investing often requires patience. Short-term market fluctuations are normal, but historically, markets tend to grow over the long term.
+                                4. <strong>Understand the business:</strong> What does the company do and how do they make money?
                             </p>
                         </div>
                     </div>
@@ -1917,7 +1975,13 @@
                     code,
                     teacherId: teacher.id,
                     className: 'New Class',
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    researchLinks: [
+                        { name: 'Yahoo Finance', url: 'https://finance.yahoo.com', description: 'Stock quotes, news, and financial data' },
+                        { name: 'Investopedia', url: 'https://www.investopedia.com', description: 'Financial education and definitions' },
+                        { name: 'MarketWatch', url: 'https://www.marketwatch.com', description: 'Market news and stock analysis' },
+                        { name: 'SEC Filings (EDGAR)', url: 'https://www.sec.gov/edgar/searchedgar/companysearch.html', description: 'Official company filings and reports' }
+                    ]
                 };
                 setData({...data, teacherCodes: [...data.teacherCodes, newCode]});
                 return code;
@@ -2090,6 +2154,8 @@
                                         executeTrade={executeTeacherTrade}
                                         onSearch={handleSearch}
                                         loading={loading}
+                                        setStocks={setStocks}
+                                        setLoading={setLoading}
                                     />
                                 </div>
                             )}
@@ -2435,6 +2501,8 @@
         // ============ TEACHER CLASSES VIEW ============
         const TeacherClassesView = ({ teacherCodes, data, setData }) => {
             const [editingCode, setEditingCode] = useState(null);
+            const [editingLinks, setEditingLinks] = useState(null);
+            const [linksData, setLinksData] = useState([]);
 
             const updateClassName = (code, newName) => {
                 const codes = data.teacherCodes.map(c => 
@@ -2451,6 +2519,34 @@
                 }
             };
 
+            const startEditingLinks = (code) => {
+                const classCode = teacherCodes.find(c => c.code === code);
+                setLinksData(classCode.researchLinks || []);
+                setEditingLinks(code);
+            };
+
+            const saveLinks = (code) => {
+                const codes = data.teacherCodes.map(c => 
+                    c.code === code ? { ...c, researchLinks: linksData } : c
+                );
+                setData({...data, teacherCodes: codes});
+                setEditingLinks(null);
+            };
+
+            const addLink = () => {
+                setLinksData([...linksData, { name: '', url: '', description: '' }]);
+            };
+
+            const updateLink = (index, field, value) => {
+                const newLinks = [...linksData];
+                newLinks[index][field] = value;
+                setLinksData(newLinks);
+            };
+
+            const deleteLink = (index) => {
+                setLinksData(linksData.filter((_, i) => i !== index));
+            };
+
             return (
                 <div className="fade-in">
                     <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Class Management</h2>
@@ -2465,13 +2561,14 @@
                                     <th>Class Name</th>
                                     <th>Access Code</th>
                                     <th>Students</th>
-                                    <th>Created</th>
+                                    <th>Research Links</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {teacherCodes.map(code => {
                                     const studentCount = data.users.filter(u => u.teacherCode === code.code).length;
+                                    const linkCount = code.researchLinks?.length || 0;
                                     
                                     return (
                                         <tr key={code.code}>
@@ -2499,15 +2596,22 @@
                                                 <span className="stock-symbol">{code.code}</span>
                                             </td>
                                             <td>{studentCount}</td>
-                                            <td>{new Date(code.createdAt).toLocaleDateString()}</td>
+                                            <td>{linkCount} links</td>
                                             <td>
-                                                <div style={{display: 'flex', gap: '0.5rem'}}>
+                                                <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
                                                     <button 
                                                         className="btn btn-secondary" 
                                                         style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
                                                         onClick={() => setEditingCode(code.code)}
                                                     >
-                                                        Edit
+                                                        Rename
+                                                    </button>
+                                                    <button 
+                                                        className="btn btn-primary" 
+                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                        onClick={() => startEditingLinks(code.code)}
+                                                    >
+                                                        Edit Links
                                                     </button>
                                                     <button 
                                                         className="btn btn-danger" 
@@ -2524,6 +2628,89 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Research Links Editor Modal */}
+                    {editingLinks && (
+                        <div className="modal-overlay" onClick={() => setEditingLinks(null)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()} style={{maxWidth: '800px'}}>
+                                <div className="modal-header">
+                                    <h2 className="modal-title">Edit Research Links</h2>
+                                    <button className="close-btn" onClick={() => setEditingLinks(null)}>×</button>
+                                </div>
+
+                                <div style={{maxHeight: '60vh', overflowY: 'auto', padding: '1rem'}}>
+                                    {linksData.map((link, index) => (
+                                        <div key={index} style={{
+                                            background: 'var(--bg-tertiary)', 
+                                            padding: '1rem', 
+                                            borderRadius: '8px', 
+                                            marginBottom: '1rem',
+                                            border: '1px solid var(--border)'
+                                        }}>
+                                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
+                                                <strong>Link {index + 1}</strong>
+                                                <button 
+                                                    className="btn btn-danger" 
+                                                    style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                    onClick={() => deleteLink(index)}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Name</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={link.name}
+                                                    onChange={(e) => updateLink(index, 'name', e.target.value)}
+                                                    placeholder="e.g., Yahoo Finance"
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">URL</label>
+                                                <input
+                                                    type="url"
+                                                    className="form-input"
+                                                    value={link.url}
+                                                    onChange={(e) => updateLink(index, 'url', e.target.value)}
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Description</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={link.description}
+                                                    onChange={(e) => updateLink(index, 'description', e.target.value)}
+                                                    placeholder="Brief description of the resource"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <button 
+                                        className="btn btn-secondary" 
+                                        style={{width: '100%', marginTop: '1rem'}}
+                                        onClick={addLink}
+                                    >
+                                        + Add New Link
+                                    </button>
+                                </div>
+
+                                <div style={{padding: '1rem', borderTop: '1px solid var(--border)', marginTop: '1rem'}}>
+                                    <button 
+                                        className="btn btn-primary" 
+                                        style={{width: '100%'}}
+                                        onClick={() => saveLinks(editingLinks)}
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
