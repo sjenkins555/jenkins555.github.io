@@ -741,7 +741,7 @@
 
         // ============ FINNHUB.IO STOCK API ============
         // Sign up for free at: https://finnhub.io/register
-        const FINNHUB_API_KEY = 'd52noahr01qggm5st0ugd52noahr01qggm5st0v0';  // Replace with your actual key!
+        const FINNHUB_API_KEY = 'd52r2dhr01qggm5tgr60d52r2dhr01qggm5tgr6g';  // Replace with your actual key!
         
         const DEFAULT_SYMBOLS = [
             'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX',
@@ -753,7 +753,7 @@
         const fetchStockPrice = async (symbol) => {
             try {
                 // Check if API key is set
-                if (FINNHUB_API_KEY === 'YOUR_API_KEY_HERE') {
+                if (FINNHUB_API_KEY === 'd52r2dhr01qggm5tgr60d52r2dhr01qggm5tgr6g') {
                     console.warn('Finnhub API key not set! Using mock data.');
                     return {
                         symbol: symbol,
@@ -808,7 +808,7 @@
         const fetchHistoricalPrice = async (symbol, yearsAgo) => {
             try {
                 // Check if API key is set
-                if (FINNHUB_API_KEY === 'YOUR_API_KEY_HERE') {
+                if (FINNHUB_API_KEY === 'd52r2dhr01qggm5tgr60d52r2dhr01qggm5tgr6g') {
                     // Mock historical data - simulate growth
                     const mockGrowthRate = 0.08; // 8% annual growth
                     const currentMockPrice = 100 + Math.random() * 50;
