@@ -197,15 +197,15 @@
 
         .auth-title {
             font-size: 2rem;
-            font-weight: 700;
             margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .auth-subtitle {
-            color: var(--text-secondary);
+            color: var(--text-muted);
             margin-bottom: 2rem;
         }
 
@@ -216,9 +216,8 @@
         .form-label {
             display: block;
             margin-bottom: 0.5rem;
+            font-weight: 600;
             color: var(--text-secondary);
-            font-weight: 500;
-            font-size: 0.9rem;
         }
 
         .form-input {
@@ -229,44 +228,40 @@
             border-radius: 8px;
             color: var(--text-primary);
             font-size: 1rem;
-            font-family: 'IBM Plex Sans', sans-serif;
             transition: all 0.3s;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.1);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
         }
 
         .form-toggle {
             text-align: center;
-            margin-top: 1.5rem;
-            color: var(--text-secondary);
+            margin-top: 2rem;
+            color: var(--text-muted);
         }
 
         .form-toggle button {
             background: none;
             border: none;
-            color: var(--accent-blue);
+            color: var(--accent-green);
             cursor: pointer;
             font-weight: 600;
-            text-decoration: underline;
         }
 
-        /* Main Dashboard */
+        /* Dashboard Layout */
         .dashboard {
             display: flex;
             flex: 1;
-            height: calc(100vh - 80px);
         }
 
         .sidebar {
-            width: 280px;
+            width: 250px;
             background: var(--bg-secondary);
-            border-right: 1px solid var(--border-highlight);
+            border-right: 1px solid var(--border);
             padding: 2rem 0;
-            overflow-y: auto;
         }
 
         .nav-item {
@@ -276,7 +271,6 @@
             gap: 1rem;
             cursor: pointer;
             transition: all 0.3s;
-            border-left: 3px solid transparent;
             color: var(--text-secondary);
             font-weight: 500;
         }
@@ -288,12 +282,12 @@
 
         .nav-item.active {
             background: var(--bg-tertiary);
-            border-left-color: var(--accent-green);
-            color: var(--text-primary);
+            color: var(--accent-green);
+            border-right: 3px solid var(--accent-green);
         }
 
         .nav-icon {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
         }
 
         .main-content {
@@ -302,7 +296,7 @@
             overflow-y: auto;
         }
 
-        /* Portfolio Cards */
+        /* Portfolio Grid */
         .portfolio-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -312,7 +306,7 @@
 
         .stat-card {
             background: var(--bg-card);
-            border: 1px solid var(--border-highlight);
+            border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1.5rem;
             transition: all 0.3s;
@@ -320,28 +314,28 @@
 
         .stat-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            border-color: var(--accent-blue);
+            border-color: var(--accent-green);
+            box-shadow: 0 8px 24px rgba(0, 255, 136, 0.1);
         }
 
         .stat-label {
-            color: var(--text-muted);
             font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 0.5rem;
         }
 
         .stat-value {
-            font-family: 'JetBrains Mono', monospace;
             font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .stat-change {
             font-size: 0.9rem;
             font-weight: 600;
+            margin-top: 0.5rem;
         }
 
         .stat-change.positive {
@@ -352,10 +346,10 @@
             color: var(--accent-red);
         }
 
-        /* Stock Table */
+        /* Tables */
         .table-container {
             background: var(--bg-card);
-            border: 1px solid var(--border-highlight);
+            border: 1px solid var(--border);
             border-radius: 12px;
             overflow: hidden;
             margin-bottom: 2rem;
@@ -374,53 +368,32 @@
             font-weight: 700;
         }
 
-        .search-box {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--bg-tertiary);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .search-box input {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            outline: none;
-            width: 250px;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        thead {
-            background: var(--bg-tertiary);
-        }
-
         th {
-            padding: 1rem 1.5rem;
             text-align: left;
+            padding: 1rem 1.5rem;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: var(--text-muted);
+            font-size: 0.85rem;
             text-transform: uppercase;
-            font-size: 0.8rem;
             letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
         }
 
         td {
             padding: 1rem 1.5rem;
-            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
         }
 
-        tbody tr {
-            transition: all 0.2s;
+        tr:last-child td {
+            border-bottom: none;
         }
 
-        tbody tr:hover {
+        tr:hover {
             background: var(--bg-tertiary);
         }
 
@@ -428,12 +401,17 @@
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
             color: var(--accent-blue);
-            font-size: 1.1rem;
         }
 
-        .stock-name {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+        /* Search Bar */
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            flex: 1;
         }
 
         /* Modal */
@@ -448,7 +426,7 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            animation: fadeIn 0.2s;
+            animation: fadeIn 0.3s;
         }
 
         @keyframes fadeIn {
@@ -461,7 +439,7 @@
             border: 1px solid var(--border-highlight);
             border-radius: 16px;
             padding: 2rem;
-            max-width: 600px;
+            max-width: 500px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -483,7 +461,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .modal-title {
@@ -494,7 +472,7 @@
         .close-btn {
             background: none;
             border: none;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             font-size: 1.5rem;
             cursor: pointer;
             padding: 0.5rem;
@@ -737,12 +715,9 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         };
 
-        // ============ FINNHUB.IO STOCK API - REAL PRICES! ============
-        // Get your free API key at: https://finnhub.io/register
-        // Fallback for teacher views that need stock prices
-        const POPULAR_STOCKS = DEFAULT_SYMBOLS.map(s => ({symbol: s, name: s, price: 100, change: 0, changePercent: 0}));
-        
-        const FINNHUB_API_KEY = 'YOUR_API_KEY_HERE';  // Replace with your actual key!
+        // ============ FINNHUB.IO STOCK API ============
+        // Sign up for free at: https://finnhub.io/register
+        const FINNHUB_API_KEY = 'd52noahr01qggm5st0ugd52noahr01qggm5st0v0';  // Replace with your actual key!
         
         const DEFAULT_SYMBOLS = [
             'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX',
@@ -760,9 +735,9 @@
                     throw new Error('Invalid stock or API limit reached');
                 }
                 
-                const currentPrice = data.c;  // Current price
-                const change = data.d;        // Change
-                const changePercent = data.dp; // Change percent
+                const currentPrice = data.c;
+                const change = data.d;
+                const changePercent = data.dp;
                 
                 // Get company name
                 const profileUrl = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
@@ -790,7 +765,7 @@
             }
         };
 
-        // Search stocks
+        // Search stocks on Finnhub
         const searchStocks = async (query) => {
             if (!query || query.length < 1) {
                 // Load default stocks
@@ -798,14 +773,12 @@
                 for (const symbol of DEFAULT_SYMBOLS) {
                     const stock = await fetchStockPrice(symbol);
                     stocks.push(stock);
-                    // Small delay to avoid rate limiting
                     await new Promise(resolve => setTimeout(resolve, 200));
                 }
                 return stocks;
             }
             
             try {
-                // Search for stocks
                 const url = `https://finnhub.io/api/v1/search?q=${query}&token=${FINNHUB_API_KEY}`;
                 const response = await fetch(url);
                 const data = await response.json();
@@ -814,7 +787,6 @@
                     return [];
                 }
                 
-                // Get prices for top results
                 const symbols = data.result
                     .filter(r => r.type === 'Common Stock')
                     .map(r => r.symbol)
@@ -834,7 +806,7 @@
             }
         };
 
-        };
+
 
         // ============ MAIN APP COMPONENT ============
         const App = () => {
@@ -1144,14 +1116,18 @@
             const [showTradeModal, setShowTradeModal] = useState(false);
             const [stocks, setStocks] = useState([]);
             const [searchQuery, setSearchQuery] = useState('');
-            const [loading, setLoading] = useState(true);
+            const [loading, setLoading] = useState(false);
 
-            // Load initial stocks
+            // Load stocks only after dashboard mounts (after login!)
             useEffect(() => {
                 const loadInitialStocks = async () => {
                     setLoading(true);
-                    const initialStocks = await searchStocks('');
-                    setStocks(initialStocks);
+                    try {
+                        const initialStocks = await searchStocks('');
+                        setStocks(initialStocks);
+                    } catch (error) {
+                        console.error('Error loading stocks:', error);
+                    }
                     setLoading(false);
                 };
                 loadInitialStocks();
@@ -1243,14 +1219,16 @@
 
             const handleSearch = async () => {
                 setLoading(true);
-                const results = await searchStocks(searchQuery);
-                setStocks(results);
+                try {
+                    const results = await searchStocks(searchQuery);
+                    setStocks(results);
+                } catch (error) {
+                    console.error('Search error:', error);
+                }
                 setLoading(false);
             };
 
-            useEffect(() => {
-                handleSearch();
-            }, [searchQuery]);
+            
 
             return (
                 <div className="app-container">
@@ -1340,88 +1318,89 @@
         const PortfolioView = ({ user, stocks, totalValue, totalGain, totalGainPercent, onTrade }) => {
             return (
                 <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>My Portfolio</h2>
-
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Portfolio Overview</h2>
+                    
                     <div className="portfolio-grid">
                         <div className="stat-card">
                             <div className="stat-label">Total Value</div>
                             <div className="stat-value">${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
-                            <div className={`stat-change ${totalGainPercent >= 0 ? 'positive' : 'negative'}`}>
-                                {totalGainPercent >= 0 ? '▲' : '▼'} ${Math.abs(totalGain).toLocaleString('en-US', {minimumFractionDigits: 2})} ({Math.abs(totalGainPercent).toFixed(2)}%)
-                            </div>
                         </div>
-
+                        
                         <div className="stat-card">
                             <div className="stat-label">Cash Balance</div>
-                            <div className="stat-value" style={{color: 'var(--accent-blue)'}}>${user.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
-                            <div className="stat-change" style={{color: 'var(--text-muted)'}}>Available to invest</div>
+                            <div className="stat-value">${user.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
                         </div>
-
+                        
                         <div className="stat-card">
-                            <div className="stat-label">Holdings</div>
-                            <div className="stat-value" style={{color: 'var(--accent-yellow)'}}>{user.portfolio.length}</div>
-                            <div className="stat-change" style={{color: 'var(--text-muted)'}}>Different stocks</div>
+                            <div className="stat-label">Total Gain/Loss</div>
+                            <div className={`stat-value ${totalGain >= 0 ? 'stat-change positive' : 'stat-change negative'}`}>
+                                ${Math.abs(totalGain).toLocaleString('en-US', {minimumFractionDigits: 2})}
+                            </div>
+                            <div className={totalGainPercent >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                {totalGainPercent >= 0 ? '+' : ''}{totalGainPercent.toFixed(2)}%
+                            </div>
                         </div>
                     </div>
 
                     <div className="table-container">
                         <div className="table-header">
-                            <div className="table-title">My Holdings</div>
+                            <div className="table-title">Holdings</div>
                         </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Stock</th>
-                                    <th>Shares</th>
-                                    <th>Avg Cost</th>
-                                    <th>Current Price</th>
-                                    <th>Total Value</th>
-                                    <th>Gain/Loss</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {user.portfolio.length === 0 ? (
+                        {user.portfolio.length === 0 ? (
+                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
+                                <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>No holdings yet</p>
+                                <p>Start trading to build your portfolio!</p>
+                            </div>
+                        ) : (
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td colSpan="7" style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>
-                                            No holdings yet. Start investing to build your portfolio!
-                                        </td>
+                                        <th>Symbol</th>
+                                        <th>Shares</th>
+                                        <th>Avg Cost</th>
+                                        <th>Current Price</th>
+                                        <th>Total Value</th>
+                                        <th>Gain/Loss</th>
+                                        <th>Action</th>
                                     </tr>
-                                ) : (
-                                    user.portfolio.map(holding => {
-                                        const stock = stocks.find(s => s.symbol === holding.symbol);
-                                        if (!stock) return null;
-                                        const currentValue = stock.price * holding.shares;
-                                        const costBasis = holding.avgCost * holding.shares;
-                                        const gain = currentValue - costBasis;
-                                        const gainPercent = (gain / costBasis) * 100;
-
+                                </thead>
+                                <tbody>
+                                    {user.portfolio.map(holding => {
+                                        const stock = stocks.find(s => s.symbol === holding.symbol) || { price: holding.avgCost };
+                                        const totalValue = stock.price * holding.shares;
+                                        const totalCost = holding.avgCost * holding.shares;
+                                        const gainLoss = totalValue - totalCost;
+                                        const gainLossPercent = (gainLoss / totalCost) * 100;
+                                        
                                         return (
                                             <tr key={holding.symbol}>
-                                                <td>
-                                                    <div className="stock-symbol">{holding.symbol}</div>
-                                                    <div className="stock-name">{stock.name}</div>
-                                                </td>
+                                                <td className="stock-symbol">{holding.symbol}</td>
                                                 <td>{holding.shares}</td>
                                                 <td>${holding.avgCost.toFixed(2)}</td>
                                                 <td>${stock.price.toFixed(2)}</td>
-                                                <td>${currentValue.toFixed(2)}</td>
+                                                <td>${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                                                 <td>
-                                                    <span className={gainPercent >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                        {gainPercent >= 0 ? '▲' : '▼'} ${Math.abs(gain).toFixed(2)} ({Math.abs(gainPercent).toFixed(2)}%)
-                                                    </span>
+                                                    <div className={gainLoss >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                                        ${Math.abs(gainLoss).toFixed(2)}
+                                                        <br/>
+                                                        ({gainLossPercent >= 0 ? '+' : ''}{gainLossPercent.toFixed(2)}%)
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    <button className="btn btn-secondary" style={{padding: '0.4rem 1rem', fontSize: '0.85rem'}} onClick={() => onTrade(stock)}>
+                                                    <button 
+                                                        className="btn btn-primary" 
+                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                        onClick={() => onTrade(stock)}
+                                                    >
                                                         Trade
                                                     </button>
                                                 </td>
                                             </tr>
                                         );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             );
@@ -1431,66 +1410,54 @@
         const MarketView = ({ stocks, searchQuery, setSearchQuery, onTrade }) => {
             return (
                 <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Stock Market</h2>
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Market</h2>
+                    
+                    <div className="search-bar">
+                        <input
+                            type="text"
+                            className="form-input search-input"
+                            placeholder="Search stocks..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
 
                     <div className="table-container">
                         <div className="table-header">
                             <div className="table-title">Available Stocks</div>
-                            <div className="search-box">
-                                <span>🔍</span>
-                                <input 
-                                    type="text" 
-                                    placeholder="Search stocks..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                            </div>
                         </div>
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Stock</th>
+                                    <th>Symbol</th>
+                                    <th>Name</th>
                                     <th>Price</th>
                                     <th>Change</th>
-                                    <th>% Change</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {loading ? (
-                                    <tr>
-                                        <td colSpan="5" style={{textAlign: 'center', padding: '3rem'}}>
-                                            <div className="spinner"></div>
-                                            <div style={{marginTop: '1rem', color: 'var(--text-muted)'}}>
-                                                Loading real stock prices from Finnhub...
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : stocks.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="5" style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>
-                                            No stocks found. Try a different search.
-                                        </td>
-                                    </tr>
-                                ) : stocks.map(stock => (
+                                {stocks.filter(stock => 
+                                    stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    stock.name.toLowerCase().includes(searchQuery.toLowerCase())
+                                ).map(stock => (
                                     <tr key={stock.symbol}>
-                                        <td>
-                                            <div className="stock-symbol">{stock.symbol}</div>
-                                            <div className="stock-name">{stock.name}</div>
-                                        </td>
+                                        <td className="stock-symbol">{stock.symbol}</td>
+                                        <td>{stock.name}</td>
                                         <td>${stock.price.toFixed(2)}</td>
                                         <td>
-                                            <span className={stock.change >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}
-                                            </span>
+                                            <div className={stock.change >= 0 ? 'stat-change positive' : 'stat-change negative'}>
+                                                ${Math.abs(stock.change).toFixed(2)}
+                                                <br/>
+                                                ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
+                                            </div>
                                         </td>
                                         <td>
-                                            <span className={stock.changePercent >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                {stock.changePercent >= 0 ? '▲' : '▼'} {Math.abs(stock.changePercent).toFixed(2)}%
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <button className="btn btn-primary" style={{padding: '0.4rem 1rem', fontSize: '0.85rem'}} onClick={() => onTrade(stock)}>
+                                            <button 
+                                                className="btn btn-primary" 
+                                                style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                onClick={() => onTrade(stock)}
+                                            >
                                                 Trade
                                             </button>
                                         </td>
@@ -1511,57 +1478,45 @@
 
                     <div className="table-container">
                         <div className="table-header">
-                            <div className="table-title">All Transactions</div>
+                            <div className="table-title">Recent Transactions</div>
                         </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Type</th>
-                                    <th>Stock</th>
-                                    <th>Shares</th>
-                                    <th>Price</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {transactions.length === 0 ? (
+                        {transactions.length === 0 ? (
+                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
+                                No transactions yet
+                            </div>
+                        ) : (
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td colSpan="6" style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>
-                                            No transactions yet. Make your first trade!
-                                        </td>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Symbol</th>
+                                        <th>Shares</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
                                     </tr>
-                                ) : (
-                                    transactions.map(tx => {
-                                        const stock = stocks.find(s => s.symbol === tx.symbol);
-                                        return (
-                                            <tr key={tx.id}>
-                                                <td>{new Date(tx.date).toLocaleDateString()}</td>
-                                                <td>
-                                                    <span style={{
-                                                        padding: '0.3rem 0.8rem',
-                                                        borderRadius: '6px',
-                                                        fontSize: '0.85rem',
-                                                        fontWeight: '600',
-                                                        background: tx.type === 'buy' ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)',
-                                                        color: tx.type === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)'
-                                                    }}>
-                                                        {tx.type.toUpperCase()}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div className="stock-symbol">{tx.symbol}</div>
-                                                    {stock && <div className="stock-name">{stock.name}</div>}
-                                                </td>
-                                                <td>{tx.shares}</td>
-                                                <td>${tx.price.toFixed(2)}</td>
-                                                <td style={{fontWeight: '600'}}>${tx.total.toFixed(2)}</td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {transactions.map(tx => (
+                                        <tr key={tx.id}>
+                                            <td>{new Date(tx.date).toLocaleDateString()}</td>
+                                            <td>
+                                                <span style={{
+                                                    fontWeight: '600',
+                                                    color: tx.type === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)'
+                                                }}>
+                                                    {tx.type.toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td className="stock-symbol">{tx.symbol}</td>
+                                            <td>{tx.shares}</td>
+                                            <td>${tx.price.toFixed(2)}</td>
+                                            <td>${tx.total.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             );
@@ -1569,33 +1524,50 @@
 
         // ============ LEARN VIEW ============
         const LearnView = () => {
-            const lessons = [
-                { title: 'Introduction to Stocks', description: 'Learn what stocks are and how the market works', icon: '📖' },
-                { title: 'Understanding Portfolios', description: 'Diversification and risk management basics', icon: '📊' },
-                { title: 'Reading Financial Statements', description: 'Understand company financials and metrics', icon: '📈' },
-                { title: 'Market Analysis', description: 'Technical and fundamental analysis explained', icon: '🔍' },
-                { title: 'Investment Strategies', description: 'Long-term vs short-term investing approaches', icon: '🎯' },
-                { title: 'Dividends and Income', description: 'How to earn passive income from stocks', icon: '💰' },
-            ];
-
             return (
                 <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '1rem'}}>Learning Center</h2>
-                    <p style={{color: 'var(--text-secondary)', marginBottom: '2rem'}}>
-                        Expand your investment knowledge with these educational resources
-                    </p>
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Learn to Invest</h2>
+                    
+                    <div className="portfolio-grid">
+                        <div className="stat-card">
+                            <div className="control-icon">📚</div>
+                            <div className="control-title">Basics</div>
+                            <p className="control-desc">Understand stocks, bonds, and market fundamentals</p>
+                        </div>
+                        
+                        <div className="stat-card">
+                            <div className="control-icon">📊</div>
+                            <div className="control-title">Analysis</div>
+                            <p className="control-desc">Learn to read financial statements and charts</p>
+                        </div>
+                        
+                        <div className="stat-card">
+                            <div className="control-icon">💡</div>
+                            <div className="control-title">Strategies</div>
+                            <p className="control-desc">Discover different investment approaches</p>
+                        </div>
+                    </div>
 
-                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
-                        {lessons.map((lesson, index) => (
-                            <div key={index} className="stat-card" style={{cursor: 'pointer'}}>
-                                <div style={{fontSize: '3rem', marginBottom: '1rem'}}>{lesson.icon}</div>
-                                <h3 style={{marginBottom: '0.5rem'}}>{lesson.title}</h3>
-                                <p style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}>{lesson.description}</p>
-                                <button className="btn btn-secondary" style={{marginTop: '1rem', width: '100%'}}>
-                                    Start Learning
-                                </button>
-                            </div>
-                        ))}
+                    <div className="table-container" style={{marginTop: '2rem'}}>
+                        <div className="table-header">
+                            <div className="table-title">Key Concepts</div>
+                        </div>
+                        <div style={{padding: '2rem'}}>
+                            <h3 style={{marginBottom: '1rem'}}>What is a Stock?</h3>
+                            <p style={{marginBottom: '1rem', lineHeight: '1.6', color: 'var(--text-secondary)'}}>
+                                A stock represents ownership in a company. When you buy a stock, you become a shareholder and own a small piece of that company.
+                            </p>
+                            
+                            <h3 style={{marginBottom: '1rem', marginTop: '2rem'}}>Risk vs. Reward</h3>
+                            <p style={{marginBottom: '1rem', lineHeight: '1.6', color: 'var(--text-secondary)'}}>
+                                Higher potential returns usually come with higher risk. Diversification helps manage risk by spreading investments across different stocks.
+                            </p>
+
+                            <h3 style={{marginBottom: '1rem', marginTop: '2rem'}}>Long-term Thinking</h3>
+                            <p style={{lineHeight: '1.6', color: 'var(--text-secondary)'}}>
+                                Successful investing often requires patience. Short-term market fluctuations are normal, but historically, markets tend to grow over the long term.
+                            </p>
+                        </div>
                     </div>
                 </div>
             );
@@ -1604,19 +1576,27 @@
         // ============ TRADE MODAL ============
         const TradeModal = ({ stock, user, onClose, onTrade }) => {
             const [tradeType, setTradeType] = useState('buy');
-            const [quantity, setQuantity] = useState(1);
+            const [shares, setShares] = useState(1);
 
             const holding = user.portfolio.find(h => h.symbol === stock.symbol);
-            const maxShares = tradeType === 'sell' ? (holding ? holding.shares : 0) : Math.floor(user.balance / stock.price);
-            const total = stock.price * quantity;
+            const maxShares = tradeType === 'sell' ? (holding?.shares || 0) : Math.floor(user.balance / stock.price);
+            const total = stock.price * shares;
+
+            const handleTrade = () => {
+                if (shares <= 0) {
+                    alert('Please enter a valid number of shares');
+                    return;
+                }
+                onTrade(stock.symbol, shares, tradeType);
+            };
 
             return (
                 <div className="modal-overlay" onClick={onClose}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div>
-                                <div className="modal-title">{stock.symbol}</div>
-                                <div className="stock-name">{stock.name}</div>
+                                <h2 className="modal-title">{stock.symbol}</h2>
+                                <p style={{color: 'var(--text-muted)'}}>{stock.name}</p>
                             </div>
                             <button className="close-btn" onClick={onClose}>×</button>
                         </div>
@@ -1624,72 +1604,71 @@
                         <div className="tabs">
                             <button 
                                 className={`tab ${tradeType === 'buy' ? 'active' : ''}`}
-                                onClick={() => {
-                                    setTradeType('buy');
-                                    setQuantity(1);
-                                }}
+                                onClick={() => setTradeType('buy')}
                             >
                                 Buy
                             </button>
                             <button 
                                 className={`tab ${tradeType === 'sell' ? 'active' : ''}`}
-                                onClick={() => {
-                                    setTradeType('sell');
-                                    setQuantity(1);
-                                }}
-                                disabled={!holding || holding.shares === 0}
+                                onClick={() => setTradeType('sell')}
                             >
                                 Sell
                             </button>
                         </div>
 
                         <div className="transaction-form">
-                            <div className="form-group">
-                                <div className="form-label">Current Price</div>
-                                <div style={{fontSize: '1.8rem', fontWeight: '700', fontFamily: 'JetBrains Mono, monospace'}}>
+                            <div>
+                                <div className="stat-label">Current Price</div>
+                                <div style={{fontSize: '1.5rem', fontWeight: '700', color: 'var(--accent-green)'}}>
                                     ${stock.price.toFixed(2)}
-                                </div>
-                                <div className={`stat-change ${stock.changePercent >= 0 ? 'positive' : 'negative'}`}>
-                                    {stock.changePercent >= 0 ? '▲' : '▼'} {Math.abs(stock.changePercent).toFixed(2)}%
                                 </div>
                             </div>
 
-                            <div className="form-group">
-                                <div className="form-label">Quantity</div>
+                            {tradeType === 'sell' && (
+                                <div>
+                                    <div className="stat-label">You Own</div>
+                                    <div style={{fontSize: '1.2rem', fontWeight: '600'}}>
+                                        {holding?.shares || 0} shares
+                                    </div>
+                                </div>
+                            )}
+
+                            <div>
+                                <div className="stat-label">Shares to {tradeType}</div>
                                 <div className="quantity-selector">
                                     <button 
                                         className="quantity-btn"
-                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        onClick={() => setShares(Math.max(1, shares - 1))}
                                     >
                                         -
                                     </button>
                                     <input
                                         type="number"
                                         className="form-input quantity-input"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(Math.max(1, Math.min(maxShares, parseInt(e.target.value) || 1)))}
+                                        value={shares}
+                                        onChange={(e) => setShares(Math.max(1, parseInt(e.target.value) || 1))}
                                         min="1"
                                         max={maxShares}
                                     />
                                     <button 
                                         className="quantity-btn"
-                                        onClick={() => setQuantity(Math.min(maxShares, quantity + 1))}
+                                        onClick={() => setShares(Math.min(maxShares, shares + 1))}
                                     >
                                         +
                                     </button>
                                 </div>
-                                <div style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>
+                                <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>
                                     Max: {maxShares} shares
-                                </div>
+                                </p>
                             </div>
 
                             <div className="transaction-summary">
                                 <div className="summary-row">
                                     <span>Shares</span>
-                                    <span>{quantity}</span>
+                                    <span>{shares}</span>
                                 </div>
                                 <div className="summary-row">
-                                    <span>Price per share</span>
+                                    <span>Price per Share</span>
                                     <span>${stock.price.toFixed(2)}</span>
                                 </div>
                                 <div className="summary-row">
@@ -1698,28 +1677,13 @@
                                 </div>
                             </div>
 
-                            {tradeType === 'buy' && total > user.balance && (
-                                <div className="alert alert-error">
-                                    Insufficient funds. Available: ${user.balance.toFixed(2)}
-                                </div>
-                            )}
-
-                            {tradeType === 'sell' && quantity > (holding ? holding.shares : 0) && (
-                                <div className="alert alert-error">
-                                    Insufficient shares. You own: {holding ? holding.shares : 0}
-                                </div>
-                            )}
-
                             <button 
                                 className={`btn ${tradeType === 'buy' ? 'btn-primary' : 'btn-danger'}`}
-                                style={{width: '100%', padding: '1rem', fontSize: '1.1rem'}}
-                                onClick={() => onTrade(stock.symbol, quantity, tradeType)}
-                                disabled={
-                                    (tradeType === 'buy' && total > user.balance) ||
-                                    (tradeType === 'sell' && quantity > (holding ? holding.shares : 0))
-                                }
+                                style={{width: '100%'}}
+                                onClick={handleTrade}
+                                disabled={shares > maxShares}
                             >
-                                {tradeType === 'buy' ? 'Buy' : 'Sell'} {quantity} share{quantity !== 1 ? 's' : ''} for ${total.toFixed(2)}
+                                {tradeType === 'buy' ? 'Buy' : 'Sell'} {shares} Shares
                             </button>
                         </div>
                     </div>
@@ -1730,24 +1694,26 @@
         // ============ TEACHER DASHBOARD ============
         const TeacherDashboard = ({ teacher, logout, data, setData }) => {
             const [activeTab, setActiveTab] = useState('overview');
-            const [showModal, setShowModal] = useState(false);
-            const [modalType, setModalType] = useState('');
+            const [stocks, setStocks] = useState([]);
+            const [loading, setLoading] = useState(false);
             const [selectedStock, setSelectedStock] = useState(null);
             const [showTradeModal, setShowTradeModal] = useState(false);
-            const [stocks, setStocks] = useState([]);
             const [searchQuery, setSearchQuery] = useState('');
-            const [loading, setLoading] = useState(true);
 
+            // Load stocks when teacher dashboard mounts
             useEffect(() => {
-                const loadInitialStocks = async () => {
+                const loadStocks = async () => {
                     setLoading(true);
-                    const initialStocks = await searchStocks('');
-                    setStocks(initialStocks);
+                    try {
+                        const initialStocks = await searchStocks('');
+                        setStocks(initialStocks);
+                    } catch (error) {
+                        console.error('Error loading stocks:', error);
+                    }
                     setLoading(false);
                 };
-                loadInitialStocks();
+                loadStocks();
             }, []);
-
 
             const generateCode = () => {
                 const code = Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -1850,14 +1816,16 @@
 
             const handleSearch = async () => {
                 setLoading(true);
-                const results = await searchStocks(searchQuery);
-                setStocks(results);
+                try {
+                    const results = await searchStocks(searchQuery);
+                    setStocks(results);
+                } catch (error) {
+                    console.error('Search error:', error);
+                }
                 setLoading(false);
             };
 
-            useEffect(() => {
-                handleSearch();
-            }, [searchQuery]);
+            
 
             return (
                 <div className="app-container">
@@ -1899,6 +1867,7 @@
                             {activeTab === 'overview' && (
                                 <TeacherOverview 
                                     students={students}
+                                    stocks={stocks}
                                     generateCode={generateCode}
                                     teacherCodes={data.teacherCodes.filter(c => c.teacherId === teacher.id)}
                                 />
@@ -1944,7 +1913,7 @@
                             )}
 
                             {activeTab === 'reports' && (
-                                <TeacherReportsView students={students} />
+                                <TeacherReportsView students={students} stocks={stocks} />
                             )}
                         </main>
                     </div>
@@ -1962,18 +1931,33 @@
         };
 
         // ============ TEACHER OVERVIEW ============
-        const TeacherOverview = ({ students, generateCode, teacherCodes }) => {
+        const TeacherOverview = ({ students, generateCode, teacherCodes, stocks = [] }) => {
+            const [showCodeModal, setShowCodeModal] = useState(false);
             const [newCode, setNewCode] = useState('');
 
-            const totalValue = students.reduce((sum, student) => {
-                return sum + student.balance + student.portfolio.reduce((pSum, holding) => {
-                    const stock = POPULAR_STOCKS.find(s => s.symbol === holding.symbol);
-                    return pSum + (stock ? stock.price * holding.shares : 0);
+            const handleGenerateCode = () => {
+                const code = generateCode();
+                setNewCode(code);
+                setShowCodeModal(true);
+            };
+
+            const totalPortfolioValue = students.reduce((sum, student) => {
+                const studentValue = student.balance + student.portfolio.reduce((pSum, holding) => {
+                    const stock = stocks.find(s => s.symbol === holding.symbol) || { price: holding.avgCost };
+                    return pSum + (stock.price * holding.shares);
                 }, 0);
+                return sum + studentValue;
             }, 0);
 
             const avgPerformance = students.length > 0 
-                ? ((totalValue - (students.length * 100000)) / (students.length * 100000) * 100).toFixed(2)
+                ? students.reduce((sum, student) => {
+                    const portfolioValue = student.balance + student.portfolio.reduce((pSum, holding) => {
+                        const stock = stocks.find(s => s.symbol === holding.symbol) || { price: holding.avgCost };
+                        return pSum + (stock.price * holding.shares);
+                    }, 0);
+                    const performance = ((portfolioValue - 100000) / 100000 * 100);
+                    return sum + performance;
+                }, 0) / students.length
                 : 0;
 
             return (
@@ -1983,104 +1967,111 @@
                     <div className="portfolio-grid">
                         <div className="stat-card">
                             <div className="stat-label">Total Students</div>
-                            <div className="stat-value" style={{color: 'var(--accent-blue)'}}>{students.length}</div>
+                            <div className="stat-value">{students.length}</div>
                         </div>
-
+                        
                         <div className="stat-card">
                             <div className="stat-label">Active Classes</div>
-                            <div className="stat-value" style={{color: 'var(--accent-yellow)'}}>{teacherCodes.length}</div>
+                            <div className="stat-value">{teacherCodes.length}</div>
+                        </div>
+                        
+                        <div className="stat-card">
+                            <div className="stat-label">Avg Performance</div>
+                            <div className={`stat-value ${avgPerformance >= 0 ? 'stat-change positive' : 'stat-change negative'}`}>
+                                {avgPerformance >= 0 ? '+' : ''}{avgPerformance.toFixed(2)}%
+                            </div>
                         </div>
 
                         <div className="stat-card">
-                            <div className="stat-label">Avg Performance</div>
-                            <div className="stat-value" style={{color: avgPerformance >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}}>
-                                {avgPerformance >= 0 ? '+' : ''}{avgPerformance}%
+                            <div className="stat-label">Total Portfolio Value</div>
+                            <div className="stat-value" style={{fontSize: '1.5rem'}}>
+                                ${totalPortfolioValue.toLocaleString('en-US', {minimumFractionDigits: 2})}
                             </div>
                         </div>
                     </div>
 
                     <div className="teacher-controls">
-                        <div className="control-card" onClick={() => {
-                            const code = generateCode();
-                            setNewCode(code);
-                        }}>
-                            <div className="control-icon">➕</div>
+                        <div className="control-card" onClick={handleGenerateCode}>
+                            <div className="control-icon">🔑</div>
                             <div className="control-title">Generate Class Code</div>
-                            <div className="control-desc">Create a new access code for students</div>
-                        </div>
-
-                        <div className="control-card">
-                            <div className="control-icon">📊</div>
-                            <div className="control-title">View Reports</div>
-                            <div className="control-desc">Access detailed performance analytics</div>
-                        </div>
-
-                        <div className="control-card">
-                            <div className="control-icon">👥</div>
-                            <div className="control-title">Manage Students</div>
-                            <div className="control-desc">View and edit student accounts</div>
-                        </div>
-
-                        <div className="control-card">
-                            <div className="control-icon">💰</div>
-                            <div className="control-title">Adjust Balances</div>
-                            <div className="control-desc">Reset or modify student portfolios</div>
+                            <p className="control-desc">Create a new access code for students</p>
                         </div>
                     </div>
 
-                    {newCode && (
-                        <div className="alert alert-success">
-                            <strong>New Code Generated:</strong> {newCode}
-                            <div style={{fontSize: '0.9rem', marginTop: '0.5rem'}}>
-                                Share this code with your students to let them join your class
+                    {showCodeModal && (
+                        <div className="modal-overlay" onClick={() => setShowCodeModal(false)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2 className="modal-title">New Class Code</h2>
+                                    <button className="close-btn" onClick={() => setShowCodeModal(false)}>×</button>
+                                </div>
+                                <div style={{textAlign: 'center', padding: '2rem'}}>
+                                    <p style={{marginBottom: '1rem'}}>Share this code with your students:</p>
+                                    <div style={{
+                                        fontSize: '2.5rem',
+                                        fontWeight: '700',
+                                        fontFamily: 'JetBrains Mono, monospace',
+                                        color: 'var(--accent-green)',
+                                        padding: '1.5rem',
+                                        background: 'var(--bg-tertiary)',
+                                        borderRadius: '12px',
+                                        letterSpacing: '4px'
+                                    }}>
+                                        {newCode}
+                                    </div>
+                                    <p style={{marginTop: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem'}}>
+                                        Students will use this code during signup
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    <div className="table-container" style={{marginTop: '2rem'}}>
+                    <div className="table-container">
                         <div className="table-header">
-                            <div className="table-title">Recent Activity</div>
+                            <div className="table-title">Recent Student Activity</div>
                         </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Portfolio Value</th>
-                                    <th>Performance</th>
-                                    <th>Last Active</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {students.length === 0 ? (
+                        {students.length === 0 ? (
+                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
+                                <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>No students yet</p>
+                                <p>Generate a class code to get started!</p>
+                            </div>
+                        ) : (
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td colSpan="4" style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>
-                                            No students yet. Generate a class code to get started!
-                                        </td>
+                                        <th>Student</th>
+                                        <th>Portfolio Value</th>
+                                        <th>Performance</th>
+                                        <th>Holdings</th>
+                                        <th>Last Activity</th>
                                     </tr>
-                                ) : (
-                                    students.slice(0, 5).map(student => {
+                                </thead>
+                                <tbody>
+                                    {students.slice(0, 10).map(student => {
                                         const portfolioValue = student.balance + student.portfolio.reduce((sum, holding) => {
-                                            const stock = POPULAR_STOCKS.find(s => s.symbol === holding.symbol);
-                                            return sum + (stock ? stock.price * holding.shares : 0);
+                                            const stock = stocks.find(s => s.symbol === holding.symbol) || { price: holding.avgCost };
+                                            return sum + (stock.price * holding.shares);
                                         }, 0);
-                                        const performance = ((portfolioValue - 100000) / 100000 * 100).toFixed(2);
-
+                                        const performance = ((portfolioValue - 100000) / 100000 * 100);
+                                        
                                         return (
                                             <tr key={student.id}>
                                                 <td>{student.name}</td>
                                                 <td>${portfolioValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                                                 <td>
                                                     <span className={performance >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                        {performance >= 0 ? '+' : ''}{performance}%
+                                                        {performance >= 0 ? '+' : ''}{performance.toFixed(2)}%
                                                     </span>
                                                 </td>
-                                                <td>{new Date(student.createdAt).toLocaleDateString()}</td>
+                                                <td>{student.portfolio.length}</td>
+                                                <td>{student.transactions.length > 0 ? new Date(student.transactions[0].date).toLocaleDateString() : 'No activity'}</td>
                                             </tr>
                                         );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             );
@@ -2088,24 +2079,27 @@
 
         // ============ TEACHER STUDENTS VIEW ============
         const TeacherStudentsView = ({ students, data, setData }) => {
-            const [selectedStudent, setSelectedStudent] = useState(null);
+            const [editingStudent, setEditingStudent] = useState(null);
+            const [balanceInput, setBalanceInput] = useState('');
 
-            const resetStudent = (studentId) => {
-                if (confirm('Are you sure you want to reset this student\'s portfolio?')) {
-                    const users = data.users.map(u => 
-                        u.id === studentId 
-                            ? { ...u, balance: 100000, portfolio: [], transactions: [] }
-                            : u
-                    );
-                    setData({...data, users});
-                }
+            const adjustBalance = (studentId, newBalance) => {
+                const users = data.users.map(u => 
+                    u.id === studentId ? { ...u, balance: parseFloat(newBalance) } : u
+                );
+                setData({...data, users});
+                setEditingStudent(null);
+                setBalanceInput('');
             };
 
-            const adjustBalance = (studentId, amount) => {
-                const newAmount = prompt('Enter new balance:');
-                if (newAmount && !isNaN(newAmount)) {
+            const resetStudent = (studentId) => {
+                if (confirm('Are you sure you want to reset this student\'s portfolio? This cannot be undone.')) {
                     const users = data.users.map(u => 
-                        u.id === studentId ? { ...u, balance: parseFloat(newAmount) } : u
+                        u.id === studentId ? { 
+                            ...u, 
+                            balance: 100000,
+                            portfolio: [],
+                            transactions: []
+                        } : u
                     );
                     setData({...data, users});
                 }
@@ -2119,54 +2113,67 @@
                         <div className="table-header">
                             <div className="table-title">All Students</div>
                         </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Portfolio Value</th>
-                                    <th>Cash Balance</th>
-                                    <th>Performance</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {students.map(student => {
-                                    const portfolioValue = student.balance + student.portfolio.reduce((sum, holding) => {
-                                        const stock = POPULAR_STOCKS.find(s => s.symbol === holding.symbol);
-                                        return sum + (stock ? stock.price * holding.shares : 0);
-                                    }, 0);
-                                    const performance = ((portfolioValue - 100000) / 100000 * 100).toFixed(2);
-
-                                    return (
+                        {students.length === 0 ? (
+                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
+                                No students enrolled yet
+                            </div>
+                        ) : (
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Username</th>
+                                        <th>Balance</th>
+                                        <th>Holdings</th>
+                                        <th>Transactions</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {students.map(student => (
                                         <tr key={student.id}>
                                             <td>{student.name}</td>
-                                            <td style={{color: 'var(--text-muted)'}}>{student.email}</td>
-                                            <td>${portfolioValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                                            <td>${student.balance.toFixed(2)}</td>
+                                            <td className="stock-symbol">{student.username}</td>
                                             <td>
-                                                <span className={performance >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                    {performance >= 0 ? '+' : ''}{performance}%
-                                                </span>
+                                                {editingStudent === student.id ? (
+                                                    <div style={{display: 'flex', gap: '0.5rem'}}>
+                                                        <input
+                                                            type="number"
+                                                            className="form-input"
+                                                            style={{width: '120px', padding: '0.3rem'}}
+                                                            value={balanceInput}
+                                                            onChange={(e) => setBalanceInput(e.target.value)}
+                                                            placeholder={student.balance.toFixed(2)}
+                                                            autoFocus
+                                                        />
+                                                        <button 
+                                                            className="btn btn-primary"
+                                                            style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                            onClick={() => adjustBalance(student.id, balanceInput)}
+                                                        >
+                                                            Save
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span>${student.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                                )}
                                             </td>
+                                            <td>{student.portfolio.length}</td>
+                                            <td>{student.transactions.length}</td>
                                             <td>
                                                 <div style={{display: 'flex', gap: '0.5rem'}}>
                                                     <button 
-                                                        className="btn btn-secondary" 
+                                                        className="btn btn-secondary"
                                                         style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                        onClick={() => setSelectedStudent(student)}
+                                                        onClick={() => {
+                                                            setEditingStudent(student.id);
+                                                            setBalanceInput(student.balance.toString());
+                                                        }}
                                                     >
-                                                        View
+                                                        Adjust Balance
                                                     </button>
                                                     <button 
-                                                        className="btn btn-secondary" 
-                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                        onClick={() => adjustBalance(student.id)}
-                                                    >
-                                                        Adjust
-                                                    </button>
-                                                    <button 
-                                                        className="btn btn-danger" 
+                                                        className="btn btn-danger"
                                                         style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
                                                         onClick={() => resetStudent(student.id)}
                                                     >
@@ -2175,91 +2182,52 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
 
-                    {selectedStudent && (
-                        <div className="modal-overlay" onClick={() => setSelectedStudent(null)}>
-                            <div className="modal" onClick={(e) => e.stopPropagation()}>
-                                <div className="modal-header">
-                                    <div className="modal-title">{selectedStudent.name}'s Portfolio</div>
-                                    <button className="close-btn" onClick={() => setSelectedStudent(null)}>×</button>
-                                </div>
-
-                                <div style={{marginBottom: '2rem'}}>
-                                    <div className="stat-label">Holdings</div>
-                                    {selectedStudent.portfolio.length === 0 ? (
-                                        <p style={{color: 'var(--text-muted)', padding: '2rem', textAlign: 'center'}}>
-                                            No holdings yet
-                                        </p>
-                                    ) : (
-                                        <table style={{marginTop: '1rem'}}>
-                                            <thead>
-                                                <tr>
-                                                    <th>Stock</th>
-                                                    <th>Shares</th>
-                                                    <th>Avg Cost</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {selectedStudent.portfolio.map(holding => (
-                                                    <tr key={holding.symbol}>
-                                                        <td className="stock-symbol">{holding.symbol}</td>
-                                                        <td>{holding.shares}</td>
-                                                        <td>${holding.avgCost.toFixed(2)}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <div className="stat-label">Recent Transactions</div>
-                                    {selectedStudent.transactions.length === 0 ? (
-                                        <p style={{color: 'var(--text-muted)', padding: '2rem', textAlign: 'center'}}>
-                                            No transactions yet
-                                        </p>
-                                    ) : (
-                                        <table style={{marginTop: '1rem'}}>
-                                            <thead>
-                                                <tr>
-                                                    <th>Date</th>
-                                                    <th>Type</th>
-                                                    <th>Stock</th>
-                                                    <th>Shares</th>
-                                                    <th>Price</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {selectedStudent.transactions.slice(0, 10).map(tx => (
-                                                    <tr key={tx.id}>
-                                                        <td>{new Date(tx.date).toLocaleDateString()}</td>
-                                                        <td>
-                                                            <span style={{
-                                                                padding: '0.2rem 0.6rem',
-                                                                borderRadius: '4px',
-                                                                fontSize: '0.75rem',
-                                                                fontWeight: '600',
-                                                                background: tx.type === 'buy' ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)',
-                                                                color: tx.type === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)'
-                                                            }}>
-                                                                {tx.type.toUpperCase()}
-                                                            </span>
-                                                        </td>
-                                                        <td className="stock-symbol">{tx.symbol}</td>
-                                                        <td>{tx.shares}</td>
-                                                        <td>${tx.price.toFixed(2)}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    )}
-                                </div>
+                    {students.length > 0 && (
+                        <div className="table-container" style={{marginTop: '2rem'}}>
+                            <div className="table-header">
+                                <div className="table-title">Recent Transactions</div>
                             </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Student</th>
+                                        <th>Type</th>
+                                        <th>Symbol</th>
+                                        <th>Shares</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {students
+                                        .flatMap(s => s.transactions.map(tx => ({...tx, studentName: s.name})))
+                                        .sort((a, b) => new Date(b.date) - new Date(a.date))
+                                        .slice(0, 20)
+                                        .map(tx => (
+                                            <tr key={tx.id}>
+                                                <td>{new Date(tx.date).toLocaleDateString()}</td>
+                                                <td>{tx.studentName}</td>
+                                                <td>
+                                                    <span style={{
+                                                        fontWeight: '600',
+                                                        color: tx.type === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)'
+                                                    }}>
+                                                        {tx.type.toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td className="stock-symbol">{tx.symbol}</td>
+                                                <td>{tx.shares}</td>
+                                                <td>${tx.price.toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>
@@ -2363,11 +2331,11 @@
         };
 
         // ============ TEACHER REPORTS VIEW ============
-        const TeacherReportsView = ({ students }) => {
+        const TeacherReportsView = ({ students, stocks = [] }) => {
             const topPerformers = [...students]
                 .map(student => {
                     const portfolioValue = student.balance + student.portfolio.reduce((sum, holding) => {
-                        const stock = POPULAR_STOCKS.find(s => s.symbol === holding.symbol);
+                        const stock = stocks.find(s => s.symbol === holding.symbol) || { symbol: holding.symbol, price: holding.avgCost };
                         return sum + (stock ? stock.price * holding.shares : 0);
                     }, 0);
                     const performance = ((portfolioValue - 100000) / 100000 * 100);
