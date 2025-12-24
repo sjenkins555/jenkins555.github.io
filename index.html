@@ -741,7 +741,7 @@
 
         // ============ FINNHUB.IO STOCK API ============
         // Sign up for free at: https://finnhub.io/register
-        const FINNHUB_API_KEY = 'd52r2dhr01qggm5tgr60d52r2dhr01qggm5tgr6g';  // Replace with your actual key!
+        const FINNHUB_API_KEY = 'YOUR_API_KEY_HERE';  // Replace with your actual key!
         
         const DEFAULT_SYMBOLS = [
             'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX',
@@ -753,7 +753,7 @@
         const fetchStockPrice = async (symbol) => {
             try {
                 // Check if API key is set
-                if (FINNHUB_API_KEY === 'd52r2dhr01qggm5tgr60d52r2dhr01qggm5tgr6g') {
+                if (FINNHUB_API_KEY === 'YOUR_API_KEY_HERE') {
                     console.warn('Finnhub API key not set! Using mock data.');
                     return {
                         symbol: symbol,
@@ -808,7 +808,7 @@
         const fetchHistoricalPrice = async (symbol, yearsAgo) => {
             try {
                 // Check if API key is set
-                if (FINNHUB_API_KEY === 'd52r2dhr01qggm5tgr60d52r2dhr01qggm5tgr6g') {
+                if (FINNHUB_API_KEY === 'YOUR_API_KEY_HERE') {
                     // Mock historical data - simulate growth
                     const mockGrowthRate = 0.08; // 8% annual growth
                     const currentMockPrice = 100 + Math.random() * 50;
@@ -893,59 +893,6 @@
         };
 
         // Search stocks on Finnhub
-        const searchStocks = async (query) => {
-            if (!query || query.length < 1) {
-                // Load default stocks
-                const stocks = [];
-                for (const symbol of DEFAULT_SYMBOLS) {
-                    const stock = await fetchStockPrice(symbol);
-                    stocks.push(stock);
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                }
-                return stocks;
-            }
-            
-            // First, try direct symbol lookup (most reliable)
-            const cleanQuery = query.trim().toUpperCase();
-            try {
-                const directStock = await fetchStockPrice(cleanQuery);
-                if (!directStock.error) {
-                    return [directStock];
-                }
-            } catch (error) {
-                console.log('Direct lookup failed, trying search...');
-            }
-            
-            // If direct lookup fails, try search endpoint
-            try {
-                const url = `https://finnhub.io/api/v1/search?q=${query}&token=${FINNHUB_API_KEY}`;
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (!data.result || data.result.length === 0) {
-                    return [];
-                }
-                
-                const symbols = data.result
-                    .filter(r => r.type === 'Common Stock')
-                    .map(r => r.symbol)
-                    .slice(0, 10);
-                
-                const stocks = [];
-                for (const symbol of symbols) {
-                    const stock = await fetchStockPrice(symbol);
-                    if (!stock.error) {
-                        stocks.push(stock);
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                }
-                
-                return stocks;
-            } catch (error) {
-                console.error('Search error:', error);
-                return [];
-            }
-        };
         const searchStocks = async (query) => {
             if (!query || query.length < 1) {
                 // Load default stocks
