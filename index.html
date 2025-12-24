@@ -1112,6 +1112,12 @@
                             >
                                 Activity & Orders
                             </button>
+                            <button 
+                                className={`tab ${activeTab === 'research' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('research')}
+                            >
+                                Research
+                            </button>
                         </div>
 
                         <div className="fade-in">
@@ -1142,6 +1148,10 @@
 
                             {activeTab === 'activity' && (
                                 <ActivityView transactions={user.transactions} stocks={stocks} />
+                            )}
+
+                            {activeTab === 'research' && (
+                                <ResearchView data={data} user={user} />
                             )}
                         </div>
                     </div>
@@ -1361,6 +1371,7 @@
                                         const totalCost = holding.avgCost * holding.shares;
                                         const gainLoss = currentValue - totalCost;
                                         const gainLossPercent = (gainLoss / totalCost) * 100;
+                                        // Today's gain/loss = how much the stock moved today × shares owned
                                         const todaysGain = stock.change * holding.shares;
 
                                         return (
@@ -1508,20 +1519,121 @@
             );
         };
 
+        // ============ RESEARCH VIEW ============
+        const ResearchView = ({ data, user }) => {
+            // Get the student's class research links
+            const teacherCode = data.teacherCodes.find(c => c.code === user.teacherCode);
+            const researchLinks = teacherCode?.researchLinks || [
+                { name: 'Yahoo Finance', url: 'https://finance.yahoo.com', description: 'Real-time stock quotes and financial news' },
+                { name: 'Investopedia', url: 'https://www.investopedia.com', description: 'Learn about investing and finance' },
+                { name: 'MarketWatch', url: 'https://www.marketwatch.com', description: 'Latest stock market and financial news' },
+                { name: 'SEC Filings (EDGAR)', url: 'https://www.sec.gov/edgar', description: 'Official company filings and reports' }
+            ];
+
+            return (
+                <div>
+                    <div className="alert-info" style={{marginBottom: '2rem'}}>
+                        <strong>📚 Research Resources</strong>
+                        <p style={{marginTop: '0.5rem'}}>
+                            Your teacher has curated these resources to help you research stocks and learn about investing.
+                        </p>
+                    </div>
+
+                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem'}}>
+                        {researchLinks.map((link, index) => (
+                            <a 
+                                key={index}
+                                href={link.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{textDecoration: 'none'}}
+                            >
+                                <div style={{
+                                    background: 'white',
+                                    padding: '1.5rem',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                                    height: '100%',
+                                    transition: 'all 0.2s',
+                                    border: '2px solid transparent',
+                                    cursor: 'pointer'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--primary-blue)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = 'transparent';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                                }}
+                                >
+                                    <div style={{fontSize: '2rem', marginBottom: '0.75rem'}}>🔗</div>
+                                    <h3 style={{color: 'var(--primary-blue)', marginBottom: '0.5rem', fontSize: '1.1rem'}}>
+                                        {link.name}
+                                    </h3>
+                                    <p style={{color: 'var(--text-gray)', fontSize: '0.9rem', lineHeight: '1.5'}}>
+                                        {link.description}
+                                    </p>
+                                </div>
+                            </a>
+                        ))}
+                    </div>
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <div className="table-title">Research Tips</div>
+                        </div>
+                        <div style={{padding: '2rem'}}>
+                            <h3 style={{marginBottom: '1.5rem', color: 'var(--text-dark)'}}>How to Research a Stock</h3>
+                            <div style={{display: 'grid', gap: '1rem'}}>
+                                <div style={{padding: '1rem', background: 'var(--bg-light)', borderRadius: '4px'}}>
+                                    <strong style={{color: 'var(--primary-blue)'}}>1. Check the financials:</strong>
+                                    <p style={{marginTop: '0.5rem', color: 'var(--text-gray)'}}>
+                                        Look at revenue, profit margins, and debt levels to understand the company's financial health
+                                    </p>
+                                </div>
+                                <div style={{padding: '1rem', background: 'var(--bg-light)', borderRadius: '4px'}}>
+                                    <strong style={{color: 'var(--primary-blue)'}}>2. Read the news:</strong>
+                                    <p style={{marginTop: '0.5rem', color: 'var(--text-gray)'}}>
+                                        Stay updated on company announcements, earnings reports, and industry trends
+                                    </p>
+                                </div>
+                                <div style={{padding: '1rem', background: 'var(--bg-light)', borderRadius: '4px'}}>
+                                    <strong style={{color: 'var(--primary-blue)'}}>3. Compare competitors:</strong>
+                                    <p style={{marginTop: '0.5rem', color: 'var(--text-gray)'}}>
+                                        How does the company stack up against rivals in terms of market share and performance?
+                                    </p>
+                                </div>
+                                <div style={{padding: '1rem', background: 'var(--bg-light)', borderRadius: '4px'}}>
+                                    <strong style={{color: 'var(--primary-blue)'}}>4. Understand the business:</strong>
+                                    <p style={{marginTop: '0.5rem', color: 'var(--text-gray)'}}>
+                                        What does the company do and how do they make money? What are their competitive advantages?
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         // ============ TRADE MODAL ============
         const TradeModal = ({ stock, user, onClose, onTrade }) => {
             const [tradeType, setTradeType] = useState('buy');
-            const [shares, setShares] = useState(1);
+            const [shares, setShares] = useState('');
 
             const handleTrade = () => {
-                if (shares < 1) {
+                const numShares = parseInt(shares);
+                if (!numShares || numShares < 1) {
                     alert('Please enter a valid number of shares');
                     return;
                 }
-                onTrade(stock.symbol, shares, tradeType);
+                onTrade(stock.symbol, numShares, tradeType);
             };
 
-            const total = stock.price * shares;
+            const total = stock.price * (parseInt(shares) || 0);
             const currentHolding = user.portfolio.find(h => h.symbol === stock.symbol);
 
             return (
@@ -1554,8 +1666,9 @@
                                     type="number"
                                     className="form-input"
                                     value={shares}
-                                    onChange={(e) => setShares(parseInt(e.target.value) || 0)}
+                                    onChange={(e) => setShares(e.target.value)}
                                     min="1"
+                                    placeholder="Enter number of shares"
                                 />
                             </div>
 
@@ -1566,7 +1679,7 @@
                                 </div>
                                 <div className="trade-summary-row">
                                     <span>Shares:</span>
-                                    <strong>{shares}</strong>
+                                    <strong>{shares || 0}</strong>
                                 </div>
                                 <div className="trade-summary-row">
                                     <span>Total:</span>
@@ -1648,6 +1761,12 @@
                             >
                                 Students
                             </button>
+                            <button 
+                                className={`tab ${activeTab === 'classes' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('classes')}
+                            >
+                                Classes
+                            </button>
                         </div>
 
                         <div className="fade-in">
@@ -1662,6 +1781,14 @@
                             {activeTab === 'students' && (
                                 <TeacherStudentsView 
                                     students={students}
+                                    data={data}
+                                    setData={setData}
+                                />
+                            )}
+
+                            {activeTab === 'classes' && (
+                                <TeacherClassesView 
+                                    teacherCodes={data.teacherCodes.filter(c => c.teacherId === teacher.id)}
                                     data={data}
                                     setData={setData}
                                 />
@@ -1866,6 +1993,221 @@
                                         onClick={() => adjustBalance(editingStudent, balanceInput)}
                                     >
                                         Update Balance
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const TeacherClassesView = ({ teacherCodes, data, setData }) => {
+            const [editingLinks, setEditingLinks] = useState(null);
+            const [linksData, setLinksData] = useState([]);
+
+            const startEditingLinks = (code) => {
+                const teacherCode = data.teacherCodes.find(c => c.code === code);
+                setLinksData(teacherCode?.researchLinks || [
+                    { name: 'Yahoo Finance', url: 'https://finance.yahoo.com', description: 'Real-time stock quotes and financial news' },
+                    { name: 'Investopedia', url: 'https://www.investopedia.com', description: 'Learn about investing and finance' },
+                    { name: 'MarketWatch', url: 'https://www.marketwatch.com', description: 'Latest stock market and financial news' },
+                    { name: 'SEC Filings (EDGAR)', url: 'https://www.sec.gov/edgar', description: 'Official company filings and reports' }
+                ]);
+                setEditingLinks(code);
+            };
+
+            const saveLinks = (code) => {
+                const updatedCodes = data.teacherCodes.map(c => 
+                    c.code === code ? { ...c, researchLinks: linksData } : c
+                );
+                setData({ ...data, teacherCodes: updatedCodes });
+                setEditingLinks(null);
+            };
+
+            const addLink = () => {
+                setLinksData([...linksData, { name: '', url: '', description: '' }]);
+            };
+
+            const updateLink = (index, field, value) => {
+                const updated = [...linksData];
+                updated[index][field] = value;
+                setLinksData(updated);
+            };
+
+            const deleteLink = (index) => {
+                setLinksData(linksData.filter((_, i) => i !== index));
+            };
+
+            const deleteCode = (code) => {
+                if (confirm('Are you sure you want to delete this class code? Students using this code will no longer be associated with your account.')) {
+                    const updatedCodes = data.teacherCodes.filter(c => c.code !== code);
+                    setData({ ...data, teacherCodes: updatedCodes });
+                }
+            };
+
+            const updateClassName = (code, newName) => {
+                const updatedCodes = data.teacherCodes.map(c => 
+                    c.code === code ? { ...c, className: newName } : c
+                );
+                setData({ ...data, teacherCodes: updatedCodes });
+            };
+
+            return (
+                <div>
+                    <div className="alert-info" style={{marginBottom: '2rem'}}>
+                        <strong>Manage Your Classes</strong>
+                        <p style={{marginTop: '0.5rem'}}>
+                            Edit class names and customize research links for each class. Students will see these resources in their Research tab.
+                        </p>
+                    </div>
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <div className="table-title">Your Classes</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Class Code</th>
+                                    <th>Class Name</th>
+                                    <th>Students</th>
+                                    <th>Research Links</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {teacherCodes.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="5">
+                                            <div className="empty-state">
+                                                <div className="empty-state-icon">🎓</div>
+                                                <p>No classes yet. Generate a class code from the Overview tab!</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    teacherCodes.map((code) => {
+                                        const classStudents = data.users.filter(u => u.teacherCode === code.code);
+                                        const linksCount = code.researchLinks?.length || 4; // default links
+                                        
+                                        return (
+                                            <tr key={code.code}>
+                                                <td><span className="class-code">{code.code}</span></td>
+                                                <td>
+                                                    <input
+                                                        type="text"
+                                                        className="form-input"
+                                                        style={{padding: '0.5rem', fontSize: '0.9rem'}}
+                                                        value={code.className}
+                                                        onChange={(e) => updateClassName(code.code, e.target.value)}
+                                                    />
+                                                </td>
+                                                <td>{classStudents.length}</td>
+                                                <td>{linksCount} links</td>
+                                                <td>
+                                                    <div style={{display: 'flex', gap: '0.5rem'}}>
+                                                        <button 
+                                                            className="btn btn-primary"
+                                                            style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
+                                                            onClick={() => startEditingLinks(code.code)}
+                                                        >
+                                                            Edit Links
+                                                        </button>
+                                                        <button 
+                                                            className="btn btn-danger"
+                                                            style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
+                                                            onClick={() => deleteCode(code.code)}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Research Links Editor Modal */}
+                    {editingLinks && (
+                        <div className="modal-overlay" onClick={() => setEditingLinks(null)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()} style={{maxWidth: '800px'}}>
+                                <div className="modal-header">
+                                    <h2 className="modal-title">Edit Research Links</h2>
+                                    <button className="close-btn" onClick={() => setEditingLinks(null)}>×</button>
+                                </div>
+
+                                <div style={{maxHeight: '60vh', overflowY: 'auto', padding: '1.5rem'}}>
+                                    {linksData.map((link, index) => (
+                                        <div key={index} style={{
+                                            background: 'var(--bg-light)', 
+                                            padding: '1.5rem', 
+                                            borderRadius: '8px', 
+                                            marginBottom: '1rem',
+                                            border: '1px solid var(--border-light)'
+                                        }}>
+                                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
+                                                <strong>Link {index + 1}</strong>
+                                                <button 
+                                                    className="btn btn-danger" 
+                                                    style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
+                                                    onClick={() => deleteLink(index)}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Name</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={link.name}
+                                                    onChange={(e) => updateLink(index, 'name', e.target.value)}
+                                                    placeholder="e.g., Yahoo Finance"
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">URL</label>
+                                                <input
+                                                    type="url"
+                                                    className="form-input"
+                                                    value={link.url}
+                                                    onChange={(e) => updateLink(index, 'url', e.target.value)}
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Description</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={link.description}
+                                                    onChange={(e) => updateLink(index, 'description', e.target.value)}
+                                                    placeholder="Brief description of the resource"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <button 
+                                        className="btn btn-secondary" 
+                                        style={{width: '100%', marginTop: '1rem'}}
+                                        onClick={addLink}
+                                    >
+                                        + Add New Link
+                                    </button>
+                                </div>
+
+                                <div style={{padding: '1.5rem', borderTop: '1px solid var(--border-light)'}}>
+                                    <button 
+                                        className="btn btn-primary" 
+                                        style={{width: '100%'}}
+                                        onClick={() => saveLinks(editingLinks)}
+                                    >
+                                        Save Changes
                                     </button>
                                 </div>
                             </div>
