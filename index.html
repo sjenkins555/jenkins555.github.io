@@ -7,22 +7,21 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0a0e1a;
-            --bg-secondary: #131824;
-            --bg-tertiary: #1a1f2e;
-            --bg-card: #1e2433;
-            --accent-green: #00ff88;
-            --accent-red: #ff3366;
-            --accent-blue: #00aaff;
-            --accent-yellow: #ffd700;
-            --text-primary: #e8edf4;
-            --text-secondary: #98a2b3;
-            --text-muted: #6b7785;
-            --border: #2a3142;
-            --border-highlight: #3a4556;
+            --primary-green: #00894b;
+            --primary-blue: #0066b2;
+            --bg-white: #ffffff;
+            --bg-light: #f7f8fa;
+            --bg-gray: #e8eaed;
+            --text-dark: #333333;
+            --text-gray: #5f6368;
+            --text-light: #80868b;
+            --border-light: #dadce0;
+            --success-green: #00894b;
+            --loss-red: #d32f2f;
+            --hover-bg: #f1f3f4;
         }
 
         * {
@@ -32,79 +31,32 @@
         }
 
         body {
-            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, #0d1220 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Animated background grid */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                linear-gradient(var(--border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 50px 50px;
-            opacity: 0.15;
-            animation: gridMove 20s linear infinite;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(50px, 50px); }
-        }
-
-        #root {
-            position: relative;
-            z-index: 1;
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
         }
 
         .app-container {
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
 
-        /* Header Styles */
+        /* Header */
         .header {
-            background: rgba(19, 24, 36, 0.95);
-            border-bottom: 2px solid var(--border-highlight);
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .logo {
-            font-family: 'JetBrains Mono', monospace;
             font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo::before {
-            content: '◆';
-            font-size: 1.2rem;
-            -webkit-text-fill-color: var(--accent-green);
+            color: var(--primary-blue);
+            font-family: 'Lato', sans-serif;
         }
 
         .header-right {
@@ -113,99 +65,91 @@
             gap: 2rem;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .balance-info {
+            text-align: right;
         }
 
-        .balance-display {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--accent-green);
+        .balance-label {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
+        .balance-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* Buttons */
         .btn {
             padding: 0.6rem 1.5rem;
             border: none;
-            border-radius: 8px;
+            border-radius: 4px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'IBM Plex Sans', sans-serif;
-            font-size: 0.95rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            font-family: 'Open Sans', sans-serif;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent-green), #00cc70);
-            color: var(--bg-primary);
-            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-highlight);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-card);
-            border-color: var(--accent-blue);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, var(--accent-red), #cc1144);
+            background: var(--primary-green);
             color: white;
         }
 
-        /* Login/Signup Screen */
+        .btn-primary:hover {
+            background: #007038;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        .btn-secondary:hover {
+            background: var(--hover-bg);
+        }
+
+        .btn-danger {
+            background: var(--loss-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+
+        /* Auth Screen */
         .auth-container {
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 2rem;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
         }
 
         .auth-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-highlight);
-            border-radius: 16px;
+            background: white;
+            border-radius: 8px;
             padding: 3rem;
-            max-width: 500px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            max-width: 450px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
 
         .auth-title {
             font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-blue);
             margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-family: 'Lato', sans-serif;
         }
 
         .auth-subtitle {
-            color: var(--text-muted);
+            color: var(--text-gray);
             margin-bottom: 2rem;
         }
 
@@ -216,156 +160,192 @@
         .form-label {
             display: block;
             margin-bottom: 0.5rem;
+            color: var(--text-dark);
             font-weight: 600;
-            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
         .form-input {
             width: 100%;
-            padding: 0.8rem 1rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
+            padding: 0.75rem;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
             font-size: 1rem;
-            transition: all 0.3s;
+            font-family: 'Open Sans', sans-serif;
+            transition: all 0.2s;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: var(--accent-green);
-            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 102, 178, 0.1);
         }
 
-        .form-toggle {
-            text-align: center;
-            margin-top: 2rem;
-            color: var(--text-muted);
-        }
-
-        .form-toggle button {
-            background: none;
-            border: none;
-            color: var(--accent-green);
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        /* Dashboard Layout */
-        .dashboard {
-            display: flex;
-            flex: 1;
-        }
-
-        .sidebar {
-            width: 250px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
-            padding: 2rem 0;
-        }
-
-        .nav-item {
-            padding: 1rem 2rem;
+        .form-checkbox {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-gray);
+        }
+
+        .auth-switch button {
+            background: none;
+            border: none;
+            color: var(--primary-blue);
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            color: var(--text-secondary);
-            font-weight: 500;
+            text-decoration: underline;
         }
 
-        .nav-item:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
+        .error-message {
+            background: #fdecea;
+            border: 1px solid var(--loss-red);
+            color: var(--loss-red);
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
         }
 
-        .nav-item.active {
-            background: var(--bg-tertiary);
-            color: var(--accent-green);
-            border-right: 3px solid var(--accent-green);
-        }
-
-        .nav-icon {
-            font-size: 1.3rem;
-        }
-
-        .main-content {
-            flex: 1;
+        /* Dashboard */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 2rem;
-            overflow-y: auto;
         }
 
-        /* Portfolio Grid */
-        .portfolio-grid {
+        .tabs {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            margin: -2rem -2rem 2rem -2rem;
+            padding: 0 2rem;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .tab {
+            background: none;
+            border: none;
+            padding: 1rem 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-gray);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--text-dark);
+        }
+
+        .tab.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+        }
+
+        /* Summary View */
+        .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+        .summary-card {
+            background: white;
+            border-radius: 8px;
             padding: 1.5rem;
-            transition: all 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .stat-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--accent-green);
-            box-shadow: 0 8px 24px rgba(0, 255, 136, 0.1);
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .stat-value {
-            font-size: 2rem;
+        .summary-card-title {
+            font-size: 1.1rem;
             font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .stat-change {
-            font-size: 0.9rem;
+        .summary-card-title svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-gray);
+        }
+
+        .balance-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .balance-change {
+            font-size: 1rem;
             font-weight: 600;
-            margin-top: 0.5rem;
         }
 
-        .stat-change.positive {
-            color: var(--accent-green);
+        .balance-change.positive {
+            color: var(--success-green);
         }
 
-        .stat-change.negative {
-            color: var(--accent-red);
+        .balance-change.negative {
+            color: var(--loss-red);
         }
 
-        /* Tables */
+        .performance-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .performance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--bg-gray);
+        }
+
+        .performance-row:last-child {
+            border-bottom: none;
+        }
+
+        .performance-label {
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .performance-value {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* Table Styles */
         .table-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            background: white;
+            border-radius: 8px;
             overflow: hidden;
-            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .table-header {
             padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-bottom: 1px solid var(--border-light);
         }
 
         .table-title {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: 700;
+            color: var(--text-dark);
         }
 
         table {
@@ -373,45 +353,121 @@
             border-collapse: collapse;
         }
 
+        thead {
+            background: var(--bg-light);
+        }
+
         th {
             text-align: left;
-            padding: 1rem 1.5rem;
+            padding: 1rem;
             font-weight: 600;
-            color: var(--text-muted);
             font-size: 0.85rem;
+            color: var(--text-gray);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--border);
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-light);
         }
 
         td {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            border-bottom: 1px solid var(--bg-gray);
+            color: var(--text-dark);
         }
 
-        tr:last-child td {
+        tbody tr:hover {
+            background: var(--bg-light);
+        }
+
+        tbody tr:last-child td {
             border-bottom: none;
         }
 
-        tr:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .stock-symbol {
-            font-family: 'JetBrains Mono', monospace;
+        .symbol-cell {
             font-weight: 700;
-            color: var(--accent-blue);
+            color: var(--primary-blue);
+            font-size: 1rem;
         }
 
-        /* Search Bar */
-        .search-bar {
+        .price-cell {
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .gain-positive {
+            color: var(--success-green);
+            font-weight: 600;
+        }
+
+        .gain-negative {
+            color: var(--loss-red);
+            font-weight: 600;
+        }
+
+        /* Search */
+        .search-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 0.5rem;
         }
 
         .search-input {
             flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 102, 178, 0.1);
+        }
+
+        /* Market Movers */
+        .movers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .mover-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid transparent;
+        }
+
+        .mover-card.gainer {
+            border-left-color: var(--success-green);
+        }
+
+        .mover-card.loser {
+            border-left-color: var(--loss-red);
+        }
+
+        .mover-symbol {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-blue);
+            margin-bottom: 0.25rem;
+        }
+
+        .mover-price {
+            font-family: monospace;
+            color: var(--text-gray);
+            font-size: 0.95rem;
+        }
+
+        .mover-change {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 0.5rem;
         }
 
         /* Modal */
@@ -421,238 +477,93 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         .modal {
-            background: var(--bg-card);
-            border: 1px solid var(--border-highlight);
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 500px;
+            background: white;
+            border-radius: 8px;
             width: 90%;
+            max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.3s;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
         }
 
         .modal-title {
             font-size: 1.5rem;
             font-weight: 700;
+            color: var(--text-dark);
         }
 
         .close-btn {
             background: none;
             border: none;
-            color: var(--text-muted);
-            font-size: 1.5rem;
+            font-size: 2rem;
             cursor: pointer;
-            padding: 0.5rem;
+            color: var(--text-gray);
             line-height: 1;
         }
 
         .close-btn:hover {
-            color: var(--text-primary);
+            color: var(--text-dark);
         }
 
-        /* Tabs */
-        .tabs {
-            display: flex;
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .trade-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 0.5rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.5rem;
         }
 
-        .tab {
-            padding: 0.8rem 1.5rem;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
+        .trade-type-btn {
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            background: white;
+            border-radius: 4px;
             font-weight: 600;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            color: var(--accent-green);
-            border-bottom-color: var(--accent-green);
-        }
-
-        /* Transaction Form */
-        .transaction-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .quantity-selector {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .quantity-btn {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            font-size: 1.2rem;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .quantity-btn:hover {
-            background: var(--bg-secondary);
-            border-color: var(--accent-blue);
+        .trade-type-btn.active {
+            border-color: var(--primary-blue);
+            background: var(--primary-blue);
+            color: white;
         }
 
-        .quantity-input {
-            flex: 1;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .transaction-summary {
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            padding: 1.5rem;
+        .trade-summary {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 4px;
             margin-top: 1rem;
         }
 
-        .summary-row {
+        .trade-summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .summary-row:last-child {
-            border-bottom: none;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--accent-green);
-            margin-top: 0.5rem;
-        }
-
-        /* Teacher Dashboard */
-        .teacher-controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .control-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-highlight);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .control-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--accent-green);
-            box-shadow: 0 8px 24px rgba(0, 255, 136, 0.2);
-        }
-
-        .control-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .control-title {
-            font-weight: 600;
             margin-bottom: 0.5rem;
         }
 
-        .control-desc {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        .slide-in {
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
-
-            .header {
-                padding: 1rem;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-
-            .portfolio-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .market-movers-grid {
-                grid-template-columns: 1fr !important;
-            }
-        }
-
-        /* Loading Spinner */
         .spinner {
-            border: 3px solid var(--border);
-            border-top: 3px solid var(--accent-green);
+            border: 3px solid var(--bg-gray);
+            border-top: 3px solid var(--primary-blue);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -665,30 +576,57 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Alert Messages */
-        .alert {
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-gray);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
             margin-bottom: 1rem;
-            font-weight: 500;
         }
 
-        .alert-success {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            color: var(--accent-green);
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
         }
 
-        .alert-error {
-            background: rgba(255, 51, 102, 0.1);
-            border: 1px solid rgba(255, 51, 102, 0.3);
-            color: var(--accent-red);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Teacher Specific Styles */
+        .teacher-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .student-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .class-code {
+            background: var(--bg-light);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            display: inline-block;
         }
 
         .alert-info {
-            background: rgba(0, 170, 255, 0.1);
-            border: 1px solid rgba(0, 170, 255, 0.3);
-            color: var(--accent-blue);
+            background: #e3f2fd;
+            border-left: 4px solid var(--primary-blue);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
@@ -696,203 +634,67 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useCallback } = React;
+        const { useState, useEffect } = React;
 
-        // ============ DATA STORAGE (In production, use backend API) ============
-        const STORAGE_KEY = 'marketmentor_data';
+        // ============ CONSTANTS ============
+        const FINNHUB_API_KEY = 'd563p09r01qu3qo87hugd563p09r01qu3qo87hv0';
+        const DEFAULT_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'JPM'];
 
+        // ============ DATA MANAGEMENT ============
         const loadData = () => {
-            const stored = localStorage.getItem(STORAGE_KEY);
+            const stored = localStorage.getItem('marketMentorData');
             if (stored) {
-                const data = JSON.parse(stored);
-                
-                // Migration: Add default research links to existing classes that don't have them
-                if (data.teacherCodes) {
-                    data.teacherCodes = data.teacherCodes.map(code => {
-                        if (!code.researchLinks) {
-                            return {
-                                ...code,
-                                researchLinks: [
-                                    { name: 'Yahoo Finance', url: 'https://finance.yahoo.com', description: 'Stock quotes, news, and financial data' },
-                                    { name: 'Investopedia', url: 'https://www.investopedia.com', description: 'Financial education and definitions' },
-                                    { name: 'MarketWatch', url: 'https://www.marketwatch.com', description: 'Market news and stock analysis' },
-                                    { name: 'SEC Filings (EDGAR)', url: 'https://www.sec.gov/edgar/searchedgar/companysearch.html', description: 'Official company filings and reports' }
-                                ]
-                            };
-                        }
-                        return code;
-                    });
-                }
-                
-                return data;
+                return JSON.parse(stored);
             }
             return {
                 users: [],
                 teachers: [],
-                classes: [],
-                transactions: [],
                 teacherCodes: []
             };
         };
 
         const saveData = (data) => {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            localStorage.setItem('marketMentorData', JSON.stringify(data));
         };
 
-        // ============ FINNHUB.IO STOCK API ============
-        // Sign up for free at: https://finnhub.io/register
-        const FINNHUB_API_KEY = 'd563p09r01qu3qo87hugd563p09r01qu3qo87hv0';  // Replace with your actual key!
-        
-        const DEFAULT_SYMBOLS = [
-            'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX',
-            'JPM', 'BAC', 'V', 'MA', 'WMT', 'HD', 'DIS', 'NKE', 'AMD', 'INTC',
-            'PYPL', 'UBER', 'ABNB', 'COIN', 'SQ', 'SHOP'
-        ];
-
-        // Fetch real stock price from Finnhub
+        // ============ API FUNCTIONS ============
         const fetchStockPrice = async (symbol) => {
             try {
-                // Check if API key is set
-                if (FINNHUB_API_KEY === 'd563p09r01qu3qo87hugd563p09r01qu3qo87hv0') {
-                    console.warn('Finnhub API key not set! Using mock data.');
-                    return {
-                        symbol: symbol,
-                        name: symbol,
-                        price: 100 + Math.random() * 50,
-                        change: (Math.random() - 0.5) * 10,
-                        changePercent: (Math.random() - 0.5) * 5,
-                        volume: 0,
-                        error: false
-                    };
-                }
-
                 const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
                 const response = await fetch(url);
                 const data = await response.json();
-                
-                if (data.error || data.c === 0) {
-                    throw new Error('Invalid stock or API limit reached');
+
+                if (data.c && data.c > 0) {
+                    return {
+                        symbol: symbol,
+                        price: data.c,
+                        change: data.d,
+                        changePercent: data.dp,
+                        high: data.h,
+                        low: data.l,
+                        open: data.o,
+                        previousClose: data.pc
+                    };
                 }
-                
-                const currentPrice = data.c;
-                const change = data.d;
-                const changePercent = data.dp;
-                
-                // Get company name
-                const profileUrl = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
-                const profileResponse = await fetch(profileUrl);
-                const profileData = await profileResponse.json();
-                
-                return {
-                    symbol: symbol,
-                    name: profileData.name || symbol,
-                    price: parseFloat(currentPrice.toFixed(2)),
-                    change: parseFloat(change.toFixed(2)),
-                    changePercent: parseFloat(changePercent.toFixed(2)),
-                    volume: 0
-                };
+                throw new Error('Invalid data');
             } catch (error) {
-                console.error(`Error fetching ${symbol}:`, error);
+                // Mock data fallback
+                const mockPrice = 100 + Math.random() * 400;
+                const mockChange = (Math.random() - 0.5) * 10;
                 return {
                     symbol: symbol,
-                    name: symbol,
-                    price: 100,
-                    change: 0,
-                    changePercent: 0,
+                    price: mockPrice,
+                    change: mockChange,
+                    changePercent: (mockChange / mockPrice) * 100,
+                    high: mockPrice + Math.random() * 5,
+                    low: mockPrice - Math.random() * 5,
+                    open: mockPrice,
+                    previousClose: mockPrice - mockChange,
                     error: true
                 };
             }
         };
 
-        // Fetch historical stock price from Finnhub
-        const fetchHistoricalPrice = async (symbol, yearsAgo) => {
-            try {
-                // Check if API key is set
-                if (FINNHUB_API_KEY === 'YOUR_API_KEY_HERE') {
-                    // Mock historical data - simulate growth
-                    const mockGrowthRate = 0.08; // 8% annual growth
-                    const currentMockPrice = 100 + Math.random() * 50;
-                    const historicalMockPrice = currentMockPrice / Math.pow(1 + mockGrowthRate, yearsAgo);
-                    return {
-                        price: historicalMockPrice,
-                        date: new Date(Date.now() - yearsAgo * 365.25 * 24 * 60 * 60 * 1000),
-                        available: true,
-                        mock: true
-                    };
-                }
-
-                const now = Math.floor(Date.now() / 1000);
-                const secondsPerYear = 365.25 * 24 * 60 * 60;
-                const then = now - (yearsAgo * secondsPerYear);
-                
-                // Get daily candles (OHLC data)
-                const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${then}&to=${then + (7 * 24 * 60 * 60)}&token=${FINNHUB_API_KEY}`;
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.s === 'ok' && data.c && data.c.length > 0) {
-                    // Return the closing price from the first available day
-                    return {
-                        price: data.c[0],
-                        date: new Date(data.t[0] * 1000),
-                        available: true
-                    };
-                } else {
-                    // Stock wasn't trading that far back
-                    return { available: false };
-                }
-            } catch (error) {
-                console.error(`Error fetching historical price for ${symbol}:`, error);
-                return { available: false };
-            }
-        };
-
-        // Calculate portfolio historical returns
-        const calculateHistoricalReturns = async (portfolio, currentStocks, yearsAgo) => {
-            let totalInvestedThen = 0;
-            let totalValueNow = 0;
-            let stocksWithData = 0;
-            
-            for (const holding of portfolio) {
-                const currentStock = currentStocks.find(s => s.symbol === holding.symbol);
-                if (!currentStock) continue;
-                
-                const historicalData = await fetchHistoricalPrice(holding.symbol, yearsAgo);
-                
-                if (historicalData.available) {
-                    const investmentAmount = holding.shares * holding.avgCost;
-                    const sharesThen = investmentAmount / historicalData.price;
-                    const valueNow = sharesThen * currentStock.price;
-                    
-                    totalInvestedThen += investmentAmount;
-                    totalValueNow += valueNow;
-                    stocksWithData++;
-                }
-                
-                // Small delay to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-            
-            if (stocksWithData === 0) {
-                return null;
-            }
-            
-            const totalReturn = totalValueNow - totalInvestedThen;
-            const returnPercent = (totalReturn / totalInvestedThen) * 100;
-            const annualizedReturn = Math.pow(totalValueNow / totalInvestedThen, 1 / yearsAgo) - 1;
-            
-            return {
-                invested: totalInvestedThen,
-                currentValue: totalValueNow,
-                totalReturn: totalReturn,
-                returnPercent: returnPercent,
-                annualizedReturn: annualizedReturn * 100,
-                stocksAnalyzed: stocksWithData,
-                yearsAgo: yearsAgo
-            };
-        };
-
-        // Search stocks on Finnhub
         const searchStocks = async (query) => {
             if (!query || query.length < 1) {
                 // Load default stocks
@@ -905,7 +707,7 @@
                 return stocks;
             }
             
-            // First, try direct symbol lookup (most reliable)
+            // First, try direct symbol lookup
             const cleanQuery = query.trim().toUpperCase();
             try {
                 const directStock = await fetchStockPrice(cleanQuery);
@@ -947,18 +749,14 @@
             }
         };
 
-
-
         // ============ MAIN APP COMPONENT ============
         const App = () => {
             const [currentUser, setCurrentUser] = useState(null);
             const [isTeacher, setIsTeacher] = useState(false);
             const [view, setView] = useState('login');
             const [data, setData] = useState(() => {
-                const loaded = loadData();
-                // Save immediately after migration
-                saveData(loaded);
-                return loaded;
+                const stored = loadData();
+                return stored;
             });
 
             useEffect(() => {
@@ -968,11 +766,9 @@
             const login = (username, password, asTeacher = false) => {
                 const users = asTeacher ? data.teachers : data.users;
                 const user = users.find(u => u.username === username && u.password === password);
-                
                 if (user) {
                     setCurrentUser(user);
                     setIsTeacher(asTeacher);
-                    setView(asTeacher ? 'teacher-dashboard' : 'dashboard');
                     return true;
                 }
                 return false;
@@ -981,73 +777,55 @@
             const logout = () => {
                 setCurrentUser(null);
                 setIsTeacher(false);
-                setView('login');
             };
 
             const signup = (userData) => {
-                if (userData.isTeacher) {
-                    const newTeacher = {
-                        id: Date.now(),
-                        ...userData,
-                        balance: 100000, // Teachers also start with balance to demonstrate
-                        portfolio: [],
-                        transactions: [],
-                        createdAt: new Date().toISOString()
-                    };
-                    setData({...data, teachers: [...data.teachers, newTeacher]});
-                } else {
-                    const newUser = {
-                        id: Date.now(),
-                        ...userData,
-                        balance: 100000, // Starting balance
-                        portfolio: [],
-                        transactions: [],
-                        createdAt: new Date().toISOString()
-                    };
-                    setData({...data, users: [...data.users, newUser]});
-                }
-                return true;
+                const newUser = {
+                    id: Date.now(),
+                    ...userData,
+                    balance: 100000,
+                    portfolio: [],
+                    transactions: []
+                };
+
+                const updatedData = {
+                    ...data,
+                    [userData.isTeacher ? 'teachers' : 'users']: [
+                        ...(userData.isTeacher ? data.teachers : data.users),
+                        newUser
+                    ]
+                };
+                
+                setData(updatedData);
+                setCurrentUser(newUser);
+                setIsTeacher(userData.isTeacher);
             };
 
             const updateUser = (updatedUser) => {
                 if (isTeacher) {
-                    const teachers = data.teachers.map(t => 
+                    const updatedTeachers = data.teachers.map(t => 
                         t.id === updatedUser.id ? updatedUser : t
                     );
-                    setData({...data, teachers});
+                    setData({ ...data, teachers: updatedTeachers });
+                    setCurrentUser(updatedUser);
                 } else {
-                    const users = data.users.map(u => 
+                    const updatedUsers = data.users.map(u => 
                         u.id === updatedUser.id ? updatedUser : u
                     );
-                    setData({...data, users});
+                    setData({ ...data, users: updatedUsers });
+                    setCurrentUser(updatedUser);
                 }
-                setCurrentUser(updatedUser);
             };
 
-            if (view === 'login' || view === 'signup') {
-                return <AuthScreen 
-                    view={view} 
-                    setView={setView} 
-                    login={login}
-                    signup={signup}
-                    data={data}
-                />;
+            if (!currentUser) {
+                return <AuthScreen view={view} setView={setView} login={login} signup={signup} data={data} />;
             }
 
-            if (isTeacher) {
-                return <TeacherDashboard 
-                    teacher={currentUser}
-                    logout={logout}
-                    data={data}
-                    setData={setData}
-                />;
-            }
-
-            return <StudentDashboard 
-                user={currentUser}
-                updateUser={updateUser}
-                logout={logout}
-            />;
+            return isTeacher ? (
+                <TeacherDashboard teacher={currentUser} logout={logout} data={data} setData={setData} />
+            ) : (
+                <StudentDashboard user={currentUser} updateUser={updateUser} logout={logout} data={data} />
+            );
         };
 
         // ============ AUTH SCREEN ============
@@ -1068,38 +846,41 @@
                 if (view === 'login') {
                     const success = login(formData.username, formData.password, formData.isTeacher);
                     if (!success) {
-                        setError('Invalid credentials');
+                        setError('Invalid username or password');
                     }
                 } else {
-                    if (!formData.isTeacher && !formData.teacherCode) {
-                        setError('Teacher code is required for students');
+                    // Validate signup
+                    if (!formData.username || !formData.password || !formData.name) {
+                        setError('Please fill in all fields');
                         return;
                     }
+
+                    if (!formData.isTeacher && !formData.teacherCode) {
+                        setError('Please enter a class code');
+                        return;
+                    }
+
                     if (!formData.isTeacher) {
                         const validCode = data.teacherCodes.find(c => c.code === formData.teacherCode);
                         if (!validCode) {
-                            setError('Invalid teacher code');
+                            setError('Invalid class code');
                             return;
                         }
                     }
+
                     signup(formData);
-                    setView('login');
                 }
             };
 
             return (
                 <div className="auth-container">
-                    <div className="auth-card fade-in">
-                        <h1 className="auth-title">
-                            {view === 'login' ? 'Welcome Back' : 'Create Account'}
-                        </h1>
+                    <div className="auth-card">
+                        <h1 className="auth-title">MarketMentor</h1>
                         <p className="auth-subtitle">
-                            {view === 'login' 
-                                ? 'Enter your username and password' 
-                                : 'Pick a username - no email required!'}
+                            {view === 'login' ? 'Sign in to your account' : 'Create your account'}
                         </p>
 
-                        {error && <div className="alert alert-error">{error}</div>}
+                        {error && <div className="error-message">{error}</div>}
 
                         <form onSubmit={handleSubmit}>
                             {view === 'signup' && (
@@ -1110,7 +891,7 @@
                                         className="form-input"
                                         value={formData.name}
                                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        required
+                                        placeholder="Enter your name"
                                     />
                                 </div>
                             )}
@@ -1122,7 +903,7 @@
                                     className="form-input"
                                     value={formData.username}
                                     onChange={(e) => setFormData({...formData, username: e.target.value})}
-                                    required
+                                    placeholder="Enter username"
                                 />
                             </div>
 
@@ -1133,62 +914,49 @@
                                     className="form-input"
                                     value={formData.password}
                                     onChange={(e) => setFormData({...formData, password: e.target.value})}
-                                    required
+                                    placeholder="Enter password"
                                 />
                             </div>
 
-                            {view === 'signup' && (
-                                <>
-                                    <div className="form-group">
-                                        <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.isTeacher}
-                                                onChange={(e) => setFormData({...formData, isTeacher: e.target.checked})}
-                                            />
-                                            <span className="form-label" style={{margin: 0}}>I'm a teacher</span>
-                                        </label>
-                                    </div>
-
-                                    {!formData.isTeacher && (
-                                        <div className="form-group">
-                                            <label className="form-label">Teacher Code</label>
-                                            <input
-                                                type="text"
-                                                className="form-input"
-                                                value={formData.teacherCode}
-                                                onChange={(e) => setFormData({...formData, teacherCode: e.target.value})}
-                                                placeholder="Enter code from your teacher"
-                                                required
-                                            />
-                                        </div>
-                                    )}
-                                </>
-                            )}
-
-                            {view === 'login' && (
+                            {view === 'signup' && !formData.isTeacher && (
                                 <div className="form-group">
-                                    <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.isTeacher}
-                                            onChange={(e) => setFormData({...formData, isTeacher: e.target.checked})}
-                                        />
-                                        <span className="form-label" style={{margin: 0}}>Login as teacher</span>
-                                    </label>
+                                    <label className="form-label">Class Code</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={formData.teacherCode}
+                                        onChange={(e) => setFormData({...formData, teacherCode: e.target.value})}
+                                        placeholder="Enter class code from your teacher"
+                                    />
                                 </div>
                             )}
 
-                            <button type="submit" className="btn btn-primary" style={{width: '100%', marginTop: '1rem'}}>
+                            <div className="form-checkbox">
+                                <input
+                                    type="checkbox"
+                                    id="isTeacher"
+                                    checked={formData.isTeacher}
+                                    onChange={(e) => setFormData({...formData, isTeacher: e.target.checked})}
+                                />
+                                <label htmlFor="isTeacher">I am a teacher</label>
+                            </div>
+
+                            <button type="submit" className="btn btn-primary" style={{width: '100%'}}>
                                 {view === 'login' ? 'Sign In' : 'Create Account'}
                             </button>
                         </form>
 
-                        <div className="form-toggle">
+                        <div className="auth-switch">
                             {view === 'login' ? (
-                                <>Don't have an account? <button onClick={() => setView('signup')}>Sign up</button></>
+                                <>
+                                    Don't have an account?{' '}
+                                    <button onClick={() => setView('signup')}>Sign up</button>
+                                </>
                             ) : (
-                                <>Already have an account? <button onClick={() => setView('login')}>Sign in</button></>
+                                <>
+                                    Already have an account?{' '}
+                                    <button onClick={() => setView('login')}>Sign in</button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -1196,80 +964,15 @@
             );
         };
 
-        // ============ STUDENT DASHBOARD CONTENT (Reusable) ============
-        const StudentDashboardContent = ({ user, updateUser, stocks, searchQuery, setSearchQuery, selectedStock, setSelectedStock, showTradeModal, setShowTradeModal, executeTrade, onSearch, loading, setStocks, setLoading }) => {
-            const [activeTab, setActiveTab] = useState('portfolio');
-
-            const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
-                const stock = stocks.find(s => s.symbol === holding.symbol);
-                return sum + (stock ? stock.price * holding.shares : 0);
-            }, 0);
-
-            const totalGain = totalValue - 100000;
-            const totalGainPercent = (totalGain / 100000) * 100;
-
-            return (
-                <>
-                    <nav className="tabs" style={{borderBottom: '2px solid var(--border)', marginBottom: '2rem'}}>
-                        <button className={`tab ${activeTab === 'portfolio' ? 'active' : ''}`} onClick={() => setActiveTab('portfolio')}>
-                            Portfolio
-                        </button>
-                        <button className={`tab ${activeTab === 'market' ? 'active' : ''}`} onClick={() => setActiveTab('market')}>
-                            Market
-                        </button>
-                        <button className={`tab ${activeTab === 'transactions' ? 'active' : ''}`} onClick={() => setActiveTab('transactions')}>
-                            Transactions
-                        </button>
-                    </nav>
-
-                    {activeTab === 'portfolio' && (
-                        <PortfolioView 
-                            user={user} 
-                            stocks={stocks}
-                            totalValue={totalValue}
-                            totalGain={totalGain}
-                            totalGainPercent={totalGainPercent}
-                            onTrade={(stock) => {
-                                setSelectedStock(stock);
-                                setShowTradeModal(true);
-                            }}
-                        />
-                    )}
-
-                    {activeTab === 'market' && (
-                        <MarketView 
-                            stocks={stocks}
-                            searchQuery={searchQuery}
-                            setSearchQuery={setSearchQuery}
-                            onTrade={(stock) => {
-                                setSelectedStock(stock);
-                                setShowTradeModal(true);
-                            }}
-                            onSearch={onSearch}
-                            loading={loading}
-                            setStocks={setStocks}
-                            setLoading={setLoading}
-                        />
-                    )}
-
-                    {activeTab === 'transactions' && (
-                        <TransactionsView transactions={user.transactions} stocks={stocks} />
-                    )}
-                </>
-            );
-        };
-
         // ============ STUDENT DASHBOARD ============
-        const StudentDashboard = ({ user, updateUser, logout }) => {
-            const [activeTab, setActiveTab] = useState('portfolio');
+        const StudentDashboard = ({ user, updateUser, logout, data }) => {
+            const [activeTab, setActiveTab] = useState('summary');
             const [selectedStock, setSelectedStock] = useState(null);
             const [showTradeModal, setShowTradeModal] = useState(false);
             const [stocks, setStocks] = useState([]);
             const [searchQuery, setSearchQuery] = useState('');
             const [loading, setLoading] = useState(false);
-            const [data, setData] = useState(loadData());
 
-            // Load stocks only after dashboard mounts (after login!)
             useEffect(() => {
                 const loadInitialStocks = async () => {
                     setLoading(true);
@@ -1283,19 +986,6 @@
                 };
                 loadInitialStocks();
             }, []);
-
-            // Get the student's class research links
-            const teacherCode = data.teacherCodes.find(c => c.code === user.teacherCode);
-            const researchLinks = teacherCode?.researchLinks || [];
-
-
-            const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
-                const stock = stocks.find(s => s.symbol === holding.symbol);
-                return sum + (stock ? stock.price * holding.shares : 0);
-            }, 0);
-
-            const totalGain = totalValue - 100000;
-            const totalGainPercent = (totalGain / 100000) * 100;
 
             const executeTrade = (symbol, shares, type) => {
                 const stock = stocks.find(s => s.symbol === symbol);
@@ -1328,14 +1018,12 @@
                         date: new Date().toISOString()
                     };
 
-                    const updatedUser = {
+                    updateUser({
                         ...user,
                         balance: user.balance - cost,
                         portfolio: newPortfolio,
                         transactions: [transaction, ...user.transactions]
-                    };
-                    
-                    updateUser(updatedUser);
+                    });
                 } else {
                     const holding = user.portfolio.find(h => h.symbol === symbol);
                     if (!holding || holding.shares < shares) {
@@ -1359,14 +1047,12 @@
                         date: new Date().toISOString()
                     };
 
-                    const updatedUser = {
+                    updateUser({
                         ...user,
                         balance: user.balance + cost,
                         portfolio: newPortfolio,
                         transactions: [transaction, ...user.transactions]
-                    };
-                    
-                    updateUser(updatedUser);
+                    });
                 }
 
                 setShowTradeModal(false);
@@ -1383,82 +1069,81 @@
                 setLoading(false);
             };
 
-            
+            const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
+                const stock = stocks.find(s => s.symbol === holding.symbol);
+                return sum + (stock ? stock.price * holding.shares : 0);
+            }, 0);
+
+            const totalGain = totalValue - 100000;
+            const totalGainPercent = (totalGain / 100000) * 100;
 
             return (
                 <div className="app-container">
                     <header className="header">
                         <div className="logo">MarketMentor</div>
                         <div className="header-right">
-                            <div className="user-info">
-                                <div>
-                                    <div style={{fontSize: '0.85rem', color: 'var(--text-muted)'}}>Portfolio Value</div>
-                                    <div className="balance-display">${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                            <div className="balance-info">
+                                <div className="balance-label">Portfolio Value</div>
+                                <div className="balance-value">
+                                    ${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                                 </div>
                             </div>
                             <button className="btn btn-secondary" onClick={logout}>Logout</button>
                         </div>
                     </header>
 
-                    <div className="dashboard">
-                        <nav className="sidebar">
-                            <div className={`nav-item ${activeTab === 'portfolio' ? 'active' : ''}`} onClick={() => setActiveTab('portfolio')}>
-                                <span className="nav-icon">📊</span>
-                                <span>Portfolio</span>
-                            </div>
-                            <div className={`nav-item ${activeTab === 'market' ? 'active' : ''}`} onClick={() => setActiveTab('market')}>
-                                <span className="nav-icon">📈</span>
-                                <span>Market</span>
-                            </div>
-                            <div className={`nav-item ${activeTab === 'transactions' ? 'active' : ''}`} onClick={() => setActiveTab('transactions')}>
-                                <span className="nav-icon">💳</span>
-                                <span>Transactions</span>
-                            </div>
-                            <div className={`nav-item ${activeTab === 'research' ? 'active' : ''}`} onClick={() => setActiveTab('research')}>
-                                <span className="nav-icon">🔍</span>
-                                <span>Research</span>
-                            </div>
-                        </nav>
+                    <div className="dashboard-container">
+                        <div className="tabs">
+                            <button 
+                                className={`tab ${activeTab === 'summary' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('summary')}
+                            >
+                                Summary
+                            </button>
+                            <button 
+                                className={`tab ${activeTab === 'positions' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('positions')}
+                            >
+                                Positions
+                            </button>
+                            <button 
+                                className={`tab ${activeTab === 'activity' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('activity')}
+                            >
+                                Activity & Orders
+                            </button>
+                        </div>
 
-                        <main className="main-content">
-                            {activeTab === 'portfolio' && (
-                                <PortfolioView 
-                                    user={user} 
-                                    stocks={stocks}
+                        <div className="fade-in">
+                            {activeTab === 'summary' && (
+                                <SummaryView 
+                                    user={user}
                                     totalValue={totalValue}
                                     totalGain={totalGain}
                                     totalGainPercent={totalGainPercent}
+                                    stocks={stocks}
+                                />
+                            )}
+
+                            {activeTab === 'positions' && (
+                                <PositionsView 
+                                    user={user}
+                                    stocks={stocks}
                                     onTrade={(stock) => {
                                         setSelectedStock(stock);
                                         setShowTradeModal(true);
                                     }}
-                                />
-                            )}
-
-                            {activeTab === 'market' && (
-                                <MarketView 
-                                    stocks={stocks}
                                     searchQuery={searchQuery}
                                     setSearchQuery={setSearchQuery}
-                                    onTrade={(stock) => {
-                                        setSelectedStock(stock);
-                                        setShowTradeModal(true);
-                                    }}
                                     onSearch={handleSearch}
                                     loading={loading}
-                                    setStocks={setStocks}
-                                    setLoading={setLoading}
                                 />
                             )}
 
-                            {activeTab === 'transactions' && (
-                                <TransactionsView transactions={user.transactions} stocks={stocks} />
+                            {activeTab === 'activity' && (
+                                <ActivityView transactions={user.transactions} stocks={stocks} />
                             )}
-
-                            {activeTab === 'research' && (
-                                <ResearchView links={researchLinks} />
-                            )}
-                        </main>
+                        </div>
                     </div>
 
                     {showTradeModal && (
@@ -1473,228 +1158,232 @@
             );
         };
 
-        // ============ PORTFOLIO VIEW ============
-        const PortfolioView = ({ user, stocks, totalValue, totalGain, totalGainPercent, onTrade }) => {
-            const [historicalPeriod, setHistoricalPeriod] = useState(null);
-            const [historicalData, setHistoricalData] = useState(null);
-            const [loadingHistorical, setLoadingHistorical] = useState(false);
-
-            const timePeriods = [
-                { label: 'Current', years: 0 },
-                { label: '1 Year', years: 1 },
-                { label: '2 Years', years: 2 },
-                { label: '5 Years', years: 5 },
-                { label: '10 Years', years: 10 },
-                { label: '20 Years', years: 20 },
-                { label: '30 Years', years: 30 }
-            ];
-
-            const loadHistoricalReturns = async (years) => {
-                if (years === 0) {
-                    setHistoricalPeriod(0);
-                    setHistoricalData(null);
-                    return;
-                }
-
-                setLoadingHistorical(true);
-                setHistoricalPeriod(years);
-                
-                const data = await calculateHistoricalReturns(user.portfolio, stocks, years);
-                setHistoricalData(data);
-                setLoadingHistorical(false);
-            };
-
+        // ============ SUMMARY VIEW ============
+        const SummaryView = ({ user, totalValue, totalGain, totalGainPercent, stocks }) => {
             return (
-                <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Portfolio Overview</h2>
-                    
-                    <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--border-highlight)'}}>
-                        <p style={{color: 'var(--text-secondary)', fontSize: '0.85rem'}}>
-                            📌 <strong>Note:</strong> Portfolio values reflect stock price changes only. Dividends are not currently included in calculations.
-                        </p>
-                    </div>
-
-                    {/* Time Period Buttons */}
-                    {user.portfolio.length > 0 && (
-                        <div style={{marginBottom: '2rem'}}>
-                            <div style={{marginBottom: '1rem'}}>
-                                <strong style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>
-                                    📊 Historical Performance Calculator
-                                </strong>
-                                <p style={{color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.3rem'}}>
-                                    See what your portfolio would be worth if you invested the same amounts years ago
-                                </p>
+                <div>
+                    <div className="summary-grid">
+                        <div className="summary-card">
+                            <h3 className="summary-card-title">Balance</h3>
+                            <div className="balance-display">
+                                ${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                             </div>
-                            <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
-                                {timePeriods.map(period => (
-                                    <button
-                                        key={period.years}
-                                        className={`btn ${historicalPeriod === period.years ? 'btn-primary' : 'btn-secondary'}`}
-                                        style={{padding: '0.5rem 1rem', fontSize: '0.85rem'}}
-                                        onClick={() => loadHistoricalReturns(period.years)}
-                                        disabled={loadingHistorical}
-                                    >
-                                        {period.label}
-                                    </button>
-                                ))}
+                            <div className={`balance-change ${totalGain >= 0 ? 'positive' : 'negative'}`}>
+                                {totalGain >= 0 ? '+' : ''}${Math.abs(totalGain).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} 
+                                ({totalGain >= 0 ? '+' : ''}{totalGainPercent.toFixed(2)}%) Today's gain/loss
                             </div>
-                        </div>
-                    )}
-
-                    {/* Historical Returns Display */}
-                    {loadingHistorical && (
-                        <div style={{textAlign: 'center', padding: '2rem', background: 'var(--bg-card)', borderRadius: '12px', marginBottom: '2rem', border: '1px solid var(--border)'}}>
-                            <div className="spinner"></div>
-                            <p style={{color: 'var(--text-muted)', marginTop: '1rem'}}>
-                                Calculating {historicalPeriod}-year returns...
-                            </p>
-                        </div>
-                    )}
-
-                    {!loadingHistorical && historicalData && (
-                        <div style={{
-                            background: 'linear-gradient(135deg, var(--bg-card) 0%, var(--bg-tertiary) 100%)',
-                            borderRadius: '12px',
-                            padding: '1.5rem',
-                            marginBottom: '2rem',
-                            border: '2px solid var(--accent-green)',
-                            boxShadow: '0 8px 24px rgba(0, 255, 136, 0.1)'
-                        }}>
-                            <h3 style={{marginBottom: '1rem', color: 'var(--accent-green)'}}>
-                                📈 {historicalPeriod}-Year Historical Returns
-                            </h3>
-                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem'}}>
-                                <div>
-                                    <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>
-                                        Amount Invested
-                                    </div>
-                                    <div style={{fontSize: '1.3rem', fontWeight: '700', fontFamily: 'JetBrains Mono, monospace'}}>
-                                        ${historicalData.invested.toLocaleString('en-US', {minimumFractionDigits: 2})}
-                                    </div>
+                            <div style={{marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-light)'}}>
+                                <div style={{fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '0.5rem'}}>
+                                    Available to trade (all settled)
                                 </div>
-                                <div>
-                                    <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>
-                                        Current Value
-                                    </div>
-                                    <div style={{fontSize: '1.3rem', fontWeight: '700', fontFamily: 'JetBrains Mono, monospace', color: 'var(--accent-green)'}}>
-                                        ${historicalData.currentValue.toLocaleString('en-US', {minimumFractionDigits: 2})}
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>
-                                        Total Return
-                                    </div>
-                                    <div style={{
-                                        fontSize: '1.3rem',
-                                        fontWeight: '700',
-                                        fontFamily: 'JetBrains Mono, monospace',
-                                        color: historicalData.totalReturn >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'
-                                    }}>
-                                        {historicalData.totalReturn >= 0 ? '+' : ''}${historicalData.totalReturn.toLocaleString('en-US', {minimumFractionDigits: 2})}
-                                        <span style={{fontSize: '0.9rem', marginLeft: '0.5rem'}}>
-                                            ({historicalData.returnPercent >= 0 ? '+' : ''}{historicalData.returnPercent.toFixed(2)}%)
-                                        </span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>
-                                        Annualized Return
-                                    </div>
-                                    <div style={{
-                                        fontSize: '1.3rem',
-                                        fontWeight: '700',
-                                        fontFamily: 'JetBrains Mono, monospace',
-                                        color: historicalData.annualizedReturn >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'
-                                    }}>
-                                        {historicalData.annualizedReturn >= 0 ? '+' : ''}{historicalData.annualizedReturn.toFixed(2)}%/yr
-                                    </div>
+                                <div style={{fontSize: '1.25rem', fontWeight: '700'}}>
+                                    ${user.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                                 </div>
                             </div>
-                            <p style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem', fontStyle: 'italic'}}>
-                                * Analyzed {historicalData.stocksAnalyzed} of {user.portfolio.length} stocks. Some stocks may not have been publicly traded {historicalPeriod} years ago.
-                            </p>
                         </div>
-                    )}
 
-                    {!loadingHistorical && historicalPeriod !== null && historicalPeriod !== 0 && !historicalData && (
-                        <div className="alert alert-info" style={{marginBottom: '2rem'}}>
-                            <strong>No Historical Data Available</strong>
-                            <p style={{marginTop: '0.5rem', fontSize: '0.9rem'}}>
-                                None of the stocks in your portfolio were publicly traded {historicalPeriod} years ago. Try a shorter time period.
-                            </p>
-                        </div>
-                    )}
-
-                    <div className="portfolio-grid">
-                        <div className="stat-card">
-                            <div className="stat-label">Total Value</div>
-                            <div className="stat-value">${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
-                        </div>
-                        
-                        <div className="stat-card">
-                            <div className="stat-label">Cash Balance</div>
-                            <div className="stat-value">${user.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
-                        </div>
-                        
-                        <div className="stat-card">
-                            <div className="stat-label">Total Gain/Loss</div>
-                            <div className={`stat-value ${totalGain >= 0 ? 'stat-change positive' : 'stat-change negative'}`}>
-                                ${Math.abs(totalGain).toLocaleString('en-US', {minimumFractionDigits: 2})}
-                            </div>
-                            <div className={totalGainPercent >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                {totalGainPercent >= 0 ? '+' : ''}{totalGainPercent.toFixed(2)}%
+                        <div className="summary-card">
+                            <h3 className="summary-card-title">Performance</h3>
+                            <div className="performance-metrics">
+                                <div className="performance-row">
+                                    <span className="performance-label">Your 1-day return</span>
+                                    <span className={`performance-value ${totalGainPercent >= 0 ? 'gain-positive' : 'gain-negative'}`}>
+                                        {totalGainPercent >= 0 ? '+' : ''}{totalGainPercent.toFixed(2)}%
+                                    </span>
+                                </div>
+                                <div className="performance-row">
+                                    <span className="performance-label">S&P 500® Index</span>
+                                    <span className="performance-value gain-positive">+0.46%</span>
+                                </div>
+                                <div className="performance-row">
+                                    <span className="performance-label">Dow Jones U.S. Total Stock Market Index</span>
+                                    <span className="performance-value gain-positive">+0.33%</span>
+                                </div>
+                                <div className="performance-row">
+                                    <span className="performance-label">NASDAQ Composite</span>
+                                    <span className="performance-value gain-positive">+0.54%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="table-container">
                         <div className="table-header">
-                            <div className="table-title">Holdings</div>
+                            <div className="table-title">Top Holdings</div>
                         </div>
-                        {user.portfolio.length === 0 ? (
-                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
-                                <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>No holdings yet</p>
-                                <p>Start trading to build your portfolio!</p>
-                            </div>
-                        ) : (
-                            <table>
-                                <thead>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Quantity</th>
+                                    <th>Current Value</th>
+                                    <th>Total Gain/Loss</th>
+                                    <th>% of Account</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {user.portfolio.length === 0 ? (
                                     <tr>
-                                        <th>Symbol</th>
-                                        <th>Shares</th>
-                                        <th>Avg Cost</th>
-                                        <th>Current Price</th>
-                                        <th>Total Value</th>
-                                        <th>Gain/Loss</th>
-                                        <th>Action</th>
+                                        <td colSpan="5">
+                                            <div className="empty-state">
+                                                <div className="empty-state-icon">📊</div>
+                                                <p>No positions yet. Start trading to build your portfolio!</p>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {user.portfolio.map(holding => {
+                                ) : (
+                                    user.portfolio.slice(0, 5).map((holding) => {
                                         const stock = stocks.find(s => s.symbol === holding.symbol) || { price: holding.avgCost };
-                                        const totalValue = stock.price * holding.shares;
+                                        const currentValue = stock.price * holding.shares;
                                         const totalCost = holding.avgCost * holding.shares;
-                                        const gainLoss = totalValue - totalCost;
-                                        const gainLossPercent = (gainLoss / totalCost) * 100;
-                                        
+                                        const gainLoss = currentValue - totalCost;
+                                        const percentOfAccount = (currentValue / totalValue) * 100;
+
                                         return (
                                             <tr key={holding.symbol}>
-                                                <td className="stock-symbol">{holding.symbol}</td>
-                                                <td>{holding.shares}</td>
-                                                <td>${holding.avgCost.toFixed(2)}</td>
-                                                <td>${stock.price.toFixed(2)}</td>
-                                                <td>${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                                                <td>
-                                                    <div className={gainLoss >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                        ${Math.abs(gainLoss).toFixed(2)}
-                                                        <br/>
-                                                        ({gainLossPercent >= 0 ? '+' : ''}{gainLossPercent.toFixed(2)}%)
-                                                    </div>
+                                                <td className="symbol-cell">{holding.symbol}</td>
+                                                <td>{holding.shares.toLocaleString()}</td>
+                                                <td className="price-cell">
+                                                    ${currentValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                                                 </td>
+                                                <td className={gainLoss >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                    {gainLoss >= 0 ? '+' : ''}${Math.abs(gainLoss).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                                </td>
+                                                <td>{percentOfAccount.toFixed(2)}%</td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ POSITIONS VIEW ============
+        const PositionsView = ({ user, stocks, onTrade, searchQuery, setSearchQuery, onSearch, loading }) => {
+            const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
+                const stock = stocks.find(s => s.symbol === holding.symbol);
+                return sum + (stock ? stock.price * holding.shares : 0);
+            }, 0);
+
+            // Market Movers
+            const sortedStocks = [...stocks].sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+            const topGainers = sortedStocks.filter(s => s.changePercent > 0).slice(0, 3);
+            const topLosers = sortedStocks.filter(s => s.changePercent < 0).slice(0, 3);
+
+            return (
+                <div>
+                    <div className="search-container">
+                        <div className="search-box">
+                            <input
+                                type="text"
+                                className="search-input"
+                                placeholder="Search stocks by symbol (e.g., AAPL, TSLA)"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && onSearch()}
+                            />
+                            <button className="btn btn-primary" onClick={onSearch} disabled={loading}>
+                                {loading ? 'Searching...' : 'Search'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {topGainers.length > 0 && (
+                        <div style={{marginBottom: '2rem'}}>
+                            <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📈 Market Movers - Top Gainers</h3>
+                            <div className="movers-grid">
+                                {topGainers.map(stock => (
+                                    <div key={stock.symbol} className="mover-card gainer">
+                                        <div className="mover-symbol">{stock.symbol}</div>
+                                        <div className="mover-price">${stock.price.toFixed(2)}</div>
+                                        <div className="mover-change gain-positive">
+                                            +{stock.changePercent.toFixed(2)}%
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {topLosers.length > 0 && (
+                        <div style={{marginBottom: '2rem'}}>
+                            <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📉 Market Movers - Top Losers</h3>
+                            <div className="movers-grid">
+                                {topLosers.map(stock => (
+                                    <div key={stock.symbol} className="mover-card loser">
+                                        <div className="mover-symbol">{stock.symbol}</div>
+                                        <div className="mover-price">${stock.price.toFixed(2)}</div>
+                                        <div className="mover-change gain-negative">
+                                            {stock.changePercent.toFixed(2)}%
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <div className="table-title">Your Positions</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Last Price</th>
+                                    <th>Today's Gain/Loss $</th>
+                                    <th>Total Gain/Loss $</th>
+                                    <th>Total Gain/Loss %</th>
+                                    <th>Current Value</th>
+                                    <th>Quantity</th>
+                                    <th>Average Cost</th>
+                                    <th>Cost Basis Total</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {user.portfolio.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="10">
+                                            <div className="empty-state">
+                                                <div className="empty-state-icon">📊</div>
+                                                <p>No positions yet. Search for stocks above to start trading!</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    user.portfolio.map((holding) => {
+                                        const stock = stocks.find(s => s.symbol === holding.symbol) || { symbol: holding.symbol, price: holding.avgCost, change: 0 };
+                                        const currentValue = stock.price * holding.shares;
+                                        const totalCost = holding.avgCost * holding.shares;
+                                        const gainLoss = currentValue - totalCost;
+                                        const gainLossPercent = (gainLoss / totalCost) * 100;
+                                        const todaysGain = stock.change * holding.shares;
+
+                                        return (
+                                            <tr key={holding.symbol}>
+                                                <td className="symbol-cell">{holding.symbol}</td>
+                                                <td className="price-cell">${stock.price.toFixed(2)}</td>
+                                                <td className={todaysGain >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                    {todaysGain >= 0 ? '+' : ''}${Math.abs(todaysGain).toFixed(2)}
+                                                </td>
+                                                <td className={gainLoss >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                    {gainLoss >= 0 ? '+' : ''}${Math.abs(gainLoss).toFixed(2)}
+                                                </td>
+                                                <td className={gainLossPercent >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                    {gainLossPercent >= 0 ? '+' : ''}{gainLossPercent.toFixed(2)}%
+                                                </td>
+                                                <td className="price-cell">${currentValue.toFixed(2)}</td>
+                                                <td>{holding.shares.toLocaleString()}</td>
+                                                <td className="price-cell">${holding.avgCost.toFixed(2)}</td>
+                                                <td className="price-cell">${totalCost.toFixed(2)}</td>
                                                 <td>
                                                     <button 
-                                                        className="btn btn-primary" 
-                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                                                        className="btn btn-primary"
+                                                        style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
                                                         onClick={() => onTrade(stock)}
                                                     >
                                                         Trade
@@ -1702,350 +1391,119 @@
                                                 </td>
                                             </tr>
                                         );
-                                    })}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                </div>
-            );
-        };
-
-        // ============ MARKET VIEW ============
-        const MarketView = ({ stocks, searchQuery, setSearchQuery, onTrade, onSearch, loading, setStocks, setLoading }) => {
-            const handleKeyPress = (e) => {
-                if (e.key === 'Enter') {
-                    onSearch();
-                }
-            };
-
-            const handleClear = async () => {
-                setSearchQuery('');
-                setLoading(true);
-                try {
-                    const defaultStocks = await searchStocks('');
-                    setStocks(defaultStocks);
-                } catch (error) {
-                    console.error('Error loading default stocks:', error);
-                }
-                setLoading(false);
-            };
-
-            // Calculate market movers (only show when not searching)
-            const topGainers = !searchQuery && stocks.length > 0 
-                ? [...stocks].sort((a, b) => b.changePercent - a.changePercent).slice(0, 5)
-                : [];
-            
-            const topLosers = !searchQuery && stocks.length > 0
-                ? [...stocks].sort((a, b) => a.changePercent - b.changePercent).slice(0, 5)
-                : [];
-
-            return (
-                <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Market</h2>
-
-                    <div className="search-bar">
-                        <input
-                            type="text"
-                            className="form-input search-input"
-                            placeholder="Search stocks by symbol (e.g., TSLA, AAPL, NVDA, GME)..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                        />
-                        <button 
-                            className="btn btn-primary" 
-                            onClick={onSearch}
-                            disabled={loading}
-                        >
-                            {loading ? 'Searching...' : 'Search'}
-                        </button>
-                        {searchQuery && (
-                            <button 
-                                className="btn btn-secondary" 
-                                onClick={handleClear}
-                                disabled={loading}
-                            >
-                                Clear
-                            </button>
-                        )}
+                                    })
+                                )}
+                            </tbody>
+                        </table>
                     </div>
 
                     {loading && (
                         <div style={{textAlign: 'center', padding: '2rem'}}>
                             <div className="spinner"></div>
-                            <p style={{color: 'var(--text-muted)', marginTop: '1rem'}}>Loading stocks...</p>
                         </div>
                     )}
 
-                    {!loading && !searchQuery && (
-                        <>
-                            <div className="market-movers-grid" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem'}}>
-                                {/* Top Gainers */}
-                                <div className="table-container">
-                                    <div className="table-header">
-                                        <div className="table-title">🚀 Top Gainers</div>
-                                    </div>
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Symbol</th>
-                                                <th>Price</th>
-                                                <th>Change</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {topGainers.map(stock => (
-                                                <tr key={stock.symbol}>
-                                                    <td className="stock-symbol">{stock.symbol}</td>
-                                                    <td>${stock.price.toFixed(2)}</td>
-                                                    <td>
-                                                        <div className="stat-change positive">
-                                                            +{stock.changePercent.toFixed(2)}%
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <button 
-                                                            className="btn btn-primary" 
-                                                            style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                            onClick={() => onTrade(stock)}
-                                                        >
-                                                            Trade
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* Top Losers */}
-                                <div className="table-container">
-                                    <div className="table-header">
-                                        <div className="table-title">📉 Top Losers</div>
-                                    </div>
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Symbol</th>
-                                                <th>Price</th>
-                                                <th>Change</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {topLosers.map(stock => (
-                                                <tr key={stock.symbol}>
-                                                    <td className="stock-symbol">{stock.symbol}</td>
-                                                    <td>${stock.price.toFixed(2)}</td>
-                                                    <td>
-                                                        <div className="stat-change negative">
-                                                            {stock.changePercent.toFixed(2)}%
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <button 
-                                                            className="btn btn-primary" 
-                                                            style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                            onClick={() => onTrade(stock)}
-                                                        >
-                                                            Trade
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </>
-                    )}
-
-                    {!loading && (
-                        <div className="table-container">
+                    {!loading && stocks.length > 0 && user.portfolio.length === 0 && (
+                        <div className="table-container" style={{marginTop: '2rem'}}>
                             <div className="table-header">
-                                <div className="table-title">
-                                    {searchQuery ? `Search Results for "${searchQuery}"` : 'Popular Stocks'}
-                                </div>
+                                <div className="table-title">Available Stocks</div>
                             </div>
-                            {stocks.length === 0 ? (
-                                <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
-                                    <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>No stocks found</p>
-                                    <p>Try searching for a stock symbol like TSLA, AAPL, NVDA, GME, or DIS</p>
-                                </div>
-                            ) : (
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Symbol</th>
-                                            <th>Name</th>
-                                            <th>Price</th>
-                                            <th>Change</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {stocks.map(stock => (
-                                            <tr key={stock.symbol}>
-                                                <td className="stock-symbol">{stock.symbol}</td>
-                                                <td>{stock.name}</td>
-                                                <td>${stock.price.toFixed(2)}</td>
-                                                <td>
-                                                    <div className={stock.change >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                        ${Math.abs(stock.change).toFixed(2)}
-                                                        <br/>
-                                                        ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <button 
-                                                        className="btn btn-primary" 
-                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                        onClick={() => onTrade(stock)}
-                                                    >
-                                                        Trade
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
-                        </div>
-                    )}
-
-                    {/* API Status - Bottom of page */}
-                    <div style={{marginTop: '3rem', padding: '0.75rem', textAlign: 'center', borderTop: '1px solid var(--border)'}}>
-                        {FINNHUB_API_KEY === 'YOUR_API_KEY_HERE' ? (
-                            <p style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>
-                                ⚠️ Using mock data. <a href="https://finnhub.io/register" target="_blank" style={{color: 'var(--accent-blue)'}}>Add API key</a> to line 742 for real-time prices.
-                            </p>
-                        ) : (
-                            <p style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>
-                                ✅ Live market data from Finnhub
-                            </p>
-                        )}
-                    </div>
-                </div>
-            );
-        };
-
-        // ============ TRANSACTIONS VIEW ============
-        const TransactionsView = ({ transactions, stocks }) => {
-            return (
-                <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Transaction History</h2>
-
-                    <div className="table-container">
-                        <div className="table-header">
-                            <div className="table-title">Recent Transactions</div>
-                        </div>
-                        {transactions.length === 0 ? (
-                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
-                                No transactions yet
-                            </div>
-                        ) : (
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Type</th>
                                         <th>Symbol</th>
-                                        <th>Shares</th>
-                                        <th>Price</th>
-                                        <th>Total</th>
+                                        <th>Last Price</th>
+                                        <th>Change</th>
+                                        <th>% Change</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {transactions.map(tx => (
-                                        <tr key={tx.id}>
-                                            <td>{new Date(tx.date).toLocaleDateString()}</td>
-                                            <td>
-                                                <span style={{
-                                                    fontWeight: '600',
-                                                    color: tx.type === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)'
-                                                }}>
-                                                    {tx.type.toUpperCase()}
-                                                </span>
+                                    {stocks.map((stock) => (
+                                        <tr key={stock.symbol}>
+                                            <td className="symbol-cell">{stock.symbol}</td>
+                                            <td className="price-cell">${stock.price.toFixed(2)}</td>
+                                            <td className={stock.change >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                {stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}
                                             </td>
-                                            <td className="stock-symbol">{tx.symbol}</td>
-                                            <td>{tx.shares}</td>
-                                            <td>${tx.price.toFixed(2)}</td>
-                                            <td>${tx.total.toFixed(2)}</td>
+                                            <td className={stock.changePercent >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+                                            </td>
+                                            <td>
+                                                <button 
+                                                    className="btn btn-primary"
+                                                    style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
+                                                    onClick={() => onTrade(stock)}
+                                                >
+                                                    Trade
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             );
         };
 
-        // ============ RESEARCH VIEW ============
-        const ResearchView = ({ links }) => {
+        // ============ ACTIVITY VIEW ============
+        const ActivityView = ({ transactions, stocks }) => {
             return (
-                <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Research Resources</h2>
-                    
-                    <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid var(--border-highlight)'}}>
-                        <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>
-                            📚 Your teacher has curated these resources to help you research stocks and learn about investing.
-                        </p>
+                <div className="table-container">
+                    <div className="table-header">
+                        <div className="table-title">Past 30 Days</div>
                     </div>
-
-                    {links.length === 0 ? (
-                        <div className="table-container">
-                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
-                                <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>No research links yet</p>
-                                <p>Your teacher will add helpful resources soon!</p>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="portfolio-grid">
-                            {links.map((link, index) => (
-                                <a 
-                                    key={index}
-                                    href={link.url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    style={{textDecoration: 'none'}}
-                                >
-                                    <div className="stat-card" style={{cursor: 'pointer', height: '100%'}}>
-                                        <div className="control-icon">🔗</div>
-                                        <div className="control-title" style={{color: 'var(--accent-green)', marginBottom: '0.5rem'}}>
-                                            {link.name}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Cash Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {transactions.length === 0 ? (
+                                <tr>
+                                    <td colSpan="4">
+                                        <div className="empty-state">
+                                            <div className="empty-state-icon">📋</div>
+                                            <p>No transactions yet</p>
                                         </div>
-                                        <p className="control-desc" style={{color: 'var(--text-secondary)'}}>
-                                            {link.description}
-                                        </p>
-                                    </div>
-                                </a>
-                            ))}
-                        </div>
-                    )}
+                                    </td>
+                                </tr>
+                            ) : (
+                                transactions.map((transaction, index) => {
+                                    const date = new Date(transaction.date).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: '2-digit',
+                                        year: 'numeric'
+                                    });
 
-                    <div className="table-container" style={{marginTop: '2rem'}}>
-                        <div className="table-header">
-                            <div className="table-title">Research Tips</div>
-                        </div>
-                        <div style={{padding: '2rem'}}>
-                            <h3 style={{marginBottom: '1rem'}}>How to Research a Stock</h3>
-                            <p style={{marginBottom: '1rem', lineHeight: '1.6', color: 'var(--text-secondary)'}}>
-                                1. <strong>Check the financials:</strong> Look at revenue, profit margins, and debt levels
-                            </p>
-                            <p style={{marginBottom: '1rem', lineHeight: '1.6', color: 'var(--text-secondary)'}}>
-                                2. <strong>Read the news:</strong> Stay updated on company announcements and industry trends
-                            </p>
-                            <p style={{marginBottom: '1rem', lineHeight: '1.6', color: 'var(--text-secondary)'}}>
-                                3. <strong>Compare competitors:</strong> How does the company stack up against rivals?
-                            </p>
-                            <p style={{lineHeight: '1.6', color: 'var(--text-secondary)'}}>
-                                4. <strong>Understand the business:</strong> What does the company do and how do they make money?
-                            </p>
-                        </div>
-                    </div>
+                                    // Calculate running balance
+                                    const laterTransactions = transactions.slice(0, index);
+                                    const runningBalance = 100000 - laterTransactions.reduce((sum, t) => {
+                                        return sum + (t.type === 'buy' ? t.total : -t.total);
+                                    }, 0);
+
+                                    return (
+                                        <tr key={transaction.id}>
+                                            <td>{date}</td>
+                                            <td>
+                                                YOU {transaction.type.toUpperCase()} {transaction.symbol} ({transaction.shares} shares) (Cash)
+                                            </td>
+                                            <td className={transaction.type === 'buy' ? 'gain-negative' : 'gain-positive'}>
+                                                {transaction.type === 'buy' ? '-' : '+'}${transaction.total.toFixed(2)}
+                                            </td>
+                                            <td className="price-cell">${runningBalance.toFixed(2)}</td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             );
         };
@@ -2055,112 +1513,85 @@
             const [tradeType, setTradeType] = useState('buy');
             const [shares, setShares] = useState(1);
 
-            const holding = user.portfolio.find(h => h.symbol === stock.symbol);
-            const maxShares = tradeType === 'sell' ? (holding?.shares || 0) : Math.floor(user.balance / stock.price);
-            const total = stock.price * shares;
-
             const handleTrade = () => {
-                if (shares <= 0) {
+                if (shares < 1) {
                     alert('Please enter a valid number of shares');
                     return;
                 }
                 onTrade(stock.symbol, shares, tradeType);
             };
 
+            const total = stock.price * shares;
+            const currentHolding = user.portfolio.find(h => h.symbol === stock.symbol);
+
             return (
                 <div className="modal-overlay" onClick={onClose}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <div>
-                                <h2 className="modal-title">{stock.symbol}</h2>
-                                <p style={{color: 'var(--text-muted)'}}>{stock.name}</p>
-                            </div>
+                            <h2 className="modal-title">{tradeType === 'buy' ? 'Buy' : 'Sell'} {stock.symbol}</h2>
                             <button className="close-btn" onClick={onClose}>×</button>
                         </div>
 
-                        <div className="tabs">
-                            <button 
-                                className={`tab ${tradeType === 'buy' ? 'active' : ''}`}
-                                onClick={() => setTradeType('buy')}
-                            >
-                                Buy
-                            </button>
-                            <button 
-                                className={`tab ${tradeType === 'sell' ? 'active' : ''}`}
-                                onClick={() => setTradeType('sell')}
-                            >
-                                Sell
-                            </button>
-                        </div>
-
-                        <div className="transaction-form">
-                            <div>
-                                <div className="stat-label">Current Price</div>
-                                <div style={{fontSize: '1.5rem', fontWeight: '700', color: 'var(--accent-green)'}}>
-                                    ${stock.price.toFixed(2)}
-                                </div>
+                        <div className="modal-body">
+                            <div className="trade-type-selector">
+                                <button 
+                                    className={`trade-type-btn ${tradeType === 'buy' ? 'active' : ''}`}
+                                    onClick={() => setTradeType('buy')}
+                                >
+                                    Buy
+                                </button>
+                                <button 
+                                    className={`trade-type-btn ${tradeType === 'sell' ? 'active' : ''}`}
+                                    onClick={() => setTradeType('sell')}
+                                >
+                                    Sell
+                                </button>
                             </div>
 
-                            {tradeType === 'sell' && (
-                                <div>
-                                    <div className="stat-label">You Own</div>
-                                    <div style={{fontSize: '1.2rem', fontWeight: '600'}}>
-                                        {holding?.shares || 0} shares
+                            <div className="form-group">
+                                <label className="form-label">Number of Shares</label>
+                                <input
+                                    type="number"
+                                    className="form-input"
+                                    value={shares}
+                                    onChange={(e) => setShares(parseInt(e.target.value) || 0)}
+                                    min="1"
+                                />
+                            </div>
+
+                            <div className="trade-summary">
+                                <div className="trade-summary-row">
+                                    <span>Current Price:</span>
+                                    <strong>${stock.price.toFixed(2)}</strong>
+                                </div>
+                                <div className="trade-summary-row">
+                                    <span>Shares:</span>
+                                    <strong>{shares}</strong>
+                                </div>
+                                <div className="trade-summary-row">
+                                    <span>Total:</span>
+                                    <strong>${total.toFixed(2)}</strong>
+                                </div>
+                                {tradeType === 'buy' && (
+                                    <div className="trade-summary-row">
+                                        <span>Available Cash:</span>
+                                        <strong>${user.balance.toFixed(2)}</strong>
                                     </div>
-                                </div>
-                            )}
-
-                            <div>
-                                <div className="stat-label">Shares to {tradeType}</div>
-                                <div className="quantity-selector">
-                                    <button 
-                                        className="quantity-btn"
-                                        onClick={() => setShares(Math.max(1, shares - 1))}
-                                    >
-                                        -
-                                    </button>
-                                    <input
-                                        type="number"
-                                        className="form-input quantity-input"
-                                        value={shares}
-                                        onChange={(e) => setShares(Math.max(1, parseInt(e.target.value) || 1))}
-                                        min="1"
-                                        max={maxShares}
-                                    />
-                                    <button 
-                                        className="quantity-btn"
-                                        onClick={() => setShares(Math.min(maxShares, shares + 1))}
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                                <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>
-                                    Max: {maxShares} shares
-                                </p>
-                            </div>
-
-                            <div className="transaction-summary">
-                                <div className="summary-row">
-                                    <span>Shares</span>
-                                    <span>{shares}</span>
-                                </div>
-                                <div className="summary-row">
-                                    <span>Price per Share</span>
-                                    <span>${stock.price.toFixed(2)}</span>
-                                </div>
-                                <div className="summary-row">
-                                    <span>Total</span>
-                                    <span>${total.toFixed(2)}</span>
-                                </div>
+                                )}
+                                {tradeType === 'sell' && currentHolding && (
+                                    <div className="trade-summary-row">
+                                        <span>Shares Owned:</span>
+                                        <strong>{currentHolding.shares}</strong>
+                                    </div>
+                                )}
                             </div>
 
                             <button 
                                 className={`btn ${tradeType === 'buy' ? 'btn-primary' : 'btn-danger'}`}
-                                style={{width: '100%'}}
+                                style={{width: '100%', marginTop: '1rem'}}
                                 onClick={handleTrade}
-                                disabled={shares > maxShares}
                             >
-                                {tradeType === 'buy' ? 'Buy' : 'Sell'} {shares} Shares
+                                {tradeType === 'buy' ? 'Buy' : 'Sell'} {shares} {shares === 1 ? 'Share' : 'Shares'}
                             </button>
                         </div>
                     </div>
@@ -2168,219 +1599,64 @@
             );
         };
 
-        // ============ TEACHER DASHBOARD ============
+        // ============ TEACHER DASHBOARD (Simplified) ============
         const TeacherDashboard = ({ teacher, logout, data, setData }) => {
             const [activeTab, setActiveTab] = useState('overview');
-            const [stocks, setStocks] = useState([]);
-            const [loading, setLoading] = useState(false);
-            const [selectedStock, setSelectedStock] = useState(null);
-            const [showTradeModal, setShowTradeModal] = useState(false);
-            const [searchQuery, setSearchQuery] = useState('');
-
-            // Load stocks when teacher dashboard mounts
-            useEffect(() => {
-                const loadStocks = async () => {
-                    setLoading(true);
-                    try {
-                        const initialStocks = await searchStocks('');
-                        setStocks(initialStocks);
-                    } catch (error) {
-                        console.error('Error loading stocks:', error);
-                    }
-                    setLoading(false);
-                };
-                loadStocks();
-            }, []);
-
-            const generateCode = () => {
-                const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-                const newCode = {
-                    code,
-                    teacherId: teacher.id,
-                    className: 'New Class',
-                    createdAt: new Date().toISOString(),
-                    researchLinks: [
-                        { name: 'Yahoo Finance', url: 'https://finance.yahoo.com', description: 'Stock quotes, news, and financial data' },
-                        { name: 'Investopedia', url: 'https://www.investopedia.com', description: 'Financial education and definitions' },
-                        { name: 'MarketWatch', url: 'https://www.marketwatch.com', description: 'Market news and stock analysis' },
-                        { name: 'SEC Filings (EDGAR)', url: 'https://www.sec.gov/edgar/searchedgar/companysearch.html', description: 'Official company filings and reports' }
-                    ]
-                };
-                setData({...data, teacherCodes: [...data.teacherCodes, newCode]});
-                return code;
-            };
 
             const students = data.users.filter(u => {
-                const userCode = data.teacherCodes.find(c => c.code === u.teacherCode);
-                return userCode && userCode.teacherId === teacher.id;
+                const teacherCode = data.teacherCodes.find(c => c.code === u.teacherCode);
+                return teacherCode && teacherCode.teacherId === teacher.id;
             });
 
-            const updateTeacher = (updatedTeacher) => {
-                const teachers = data.teachers.map(t => 
-                    t.id === updatedTeacher.id ? updatedTeacher : t
-                );
-                setData({...data, teachers});
+            const generateCode = () => {
+                const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const newCode = {
+                    code: code,
+                    teacherId: teacher.id,
+                    className: 'New Class',
+                    createdAt: new Date().toISOString()
+                };
+
+                setData({
+                    ...data,
+                    teacherCodes: [...data.teacherCodes, newCode]
+                });
+
+                return code;
             };
-
-            const executeTeacherTrade = (symbol, shares, type) => {
-                const stock = stocks.find(s => s.symbol === symbol);
-                if (!stock) return;
-
-                const cost = stock.price * shares;
-
-                if (type === 'buy') {
-                    if (cost > teacher.balance) {
-                        alert('Insufficient funds');
-                        return;
-                    }
-
-                    const existingHolding = teacher.portfolio.find(h => h.symbol === symbol);
-                    const newPortfolio = existingHolding
-                        ? teacher.portfolio.map(h => 
-                            h.symbol === symbol 
-                                ? { ...h, shares: h.shares + shares, avgCost: ((h.avgCost * h.shares) + cost) / (h.shares + shares) }
-                                : h
-                          )
-                        : [...teacher.portfolio, { symbol, shares, avgCost: stock.price, purchaseDate: new Date().toISOString() }];
-
-                    const transaction = {
-                        id: Date.now(),
-                        symbol,
-                        type: 'buy',
-                        shares,
-                        price: stock.price,
-                        total: cost,
-                        date: new Date().toISOString()
-                    };
-
-                    const updatedTeacher = {
-                        ...teacher,
-                        balance: teacher.balance - cost,
-                        portfolio: newPortfolio,
-                        transactions: [transaction, ...teacher.transactions]
-                    };
-                    
-                    updateTeacher(updatedTeacher);
-                } else {
-                    const holding = teacher.portfolio.find(h => h.symbol === symbol);
-                    if (!holding || holding.shares < shares) {
-                        alert('Insufficient shares');
-                        return;
-                    }
-
-                    const newPortfolio = holding.shares === shares
-                        ? teacher.portfolio.filter(h => h.symbol !== symbol)
-                        : teacher.portfolio.map(h => 
-                            h.symbol === symbol ? { ...h, shares: h.shares - shares } : h
-                          );
-
-                    const transaction = {
-                        id: Date.now(),
-                        symbol,
-                        type: 'sell',
-                        shares,
-                        price: stock.price,
-                        total: cost,
-                        date: new Date().toISOString()
-                    };
-
-                    const updatedTeacher = {
-                        ...teacher,
-                        balance: teacher.balance + cost,
-                        portfolio: newPortfolio,
-                        transactions: [transaction, ...teacher.transactions]
-                    };
-                    
-                    updateTeacher(updatedTeacher);
-                }
-
-                setShowTradeModal(false);
-            };
-
-            const handleSearch = async () => {
-                setLoading(true);
-                try {
-                    const results = await searchStocks(searchQuery);
-                    setStocks(results);
-                } catch (error) {
-                    console.error('Search error:', error);
-                }
-                setLoading(false);
-            };
-
-            
 
             return (
                 <div className="app-container">
                     <header className="header">
-                        <div className="logo">MarketMentor <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Teacher</span></div>
+                        <div className="logo">MarketMentor - Teacher Dashboard</div>
                         <div className="header-right">
-                            <div style={{color: 'var(--text-secondary)'}}>
-                                {teacher.name}
-                            </div>
                             <button className="btn btn-secondary" onClick={logout}>Logout</button>
                         </div>
                     </header>
 
-                    <div className="dashboard">
-                        <nav className="sidebar">
-                            <div className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
-                                <span className="nav-icon">📊</span>
-                                <span>Overview</span>
-                            </div>
-                            <div className={`nav-item ${activeTab === 'my-portfolio' ? 'active' : ''}`} onClick={() => setActiveTab('my-portfolio')}>
-                                <span className="nav-icon">💼</span>
-                                <span>My Portfolio</span>
-                            </div>
-                            <div className={`nav-item ${activeTab === 'students' ? 'active' : ''}`} onClick={() => setActiveTab('students')}>
-                                <span className="nav-icon">👥</span>
-                                <span>Students</span>
-                            </div>
-                            <div className={`nav-item ${activeTab === 'classes' ? 'active' : ''}`} onClick={() => setActiveTab('classes')}>
-                                <span className="nav-icon">🏫</span>
-                                <span>Classes</span>
-                            </div>
-                            <div className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>
-                                <span className="nav-icon">📈</span>
-                                <span>Reports</span>
-                            </div>
-                        </nav>
+                    <div className="dashboard-container">
+                        <div className="tabs">
+                            <button 
+                                className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('overview')}
+                            >
+                                Overview
+                            </button>
+                            <button 
+                                className={`tab ${activeTab === 'students' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('students')}
+                            >
+                                Students
+                            </button>
+                        </div>
 
-                        <main className="main-content">
+                        <div className="fade-in">
                             {activeTab === 'overview' && (
                                 <TeacherOverview 
                                     students={students}
-                                    stocks={stocks}
                                     generateCode={generateCode}
                                     teacherCodes={data.teacherCodes.filter(c => c.teacherId === teacher.id)}
                                 />
-                            )}
-
-                            {activeTab === 'my-portfolio' && (
-                                <div>
-                                    <div style={{background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid var(--accent-blue)'}}>
-                                        <strong>Teacher Demo Portfolio</strong>
-                                        <p style={{color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem'}}>
-                                            Use this portfolio to demonstrate trading to your students. This is separate from student portfolios.
-                                        </p>
-                                    </div>
-                                    <StudentDashboardContent 
-                                        user={teacher}
-                                        updateUser={updateTeacher}
-                                        stocks={stocks}
-                                        searchQuery={searchQuery}
-                                        setSearchQuery={setSearchQuery}
-                                        selectedStock={selectedStock}
-                                        setSelectedStock={setSelectedStock}
-                                        showTradeModal={showTradeModal}
-                                        setShowTradeModal={setShowTradeModal}
-                                        executeTrade={executeTeacherTrade}
-                                        onSearch={handleSearch}
-                                        loading={loading}
-                                        setStocks={setStocks}
-                                        setLoading={setLoading}
-                                    />
-                                </div>
                             )}
 
                             {activeTab === 'students' && (
@@ -2390,35 +1666,13 @@
                                     setData={setData}
                                 />
                             )}
-
-                            {activeTab === 'classes' && (
-                                <TeacherClassesView 
-                                    teacherCodes={data.teacherCodes.filter(c => c.teacherId === teacher.id)}
-                                    data={data}
-                                    setData={setData}
-                                />
-                            )}
-
-                            {activeTab === 'reports' && (
-                                <TeacherReportsView students={students} stocks={stocks} />
-                            )}
-                        </main>
+                        </div>
                     </div>
-
-                    {showTradeModal && (
-                        <TradeModal
-                            stock={selectedStock}
-                            user={teacher}
-                            onClose={() => setShowTradeModal(false)}
-                            onTrade={executeTeacherTrade}
-                        />
-                    )}
                 </div>
             );
         };
 
-        // ============ TEACHER OVERVIEW ============
-        const TeacherOverview = ({ students, generateCode, teacherCodes, stocks = [] }) => {
+        const TeacherOverview = ({ students, generateCode, teacherCodes }) => {
             const [showCodeModal, setShowCodeModal] = useState(false);
             const [newCode, setNewCode] = useState('');
 
@@ -2428,577 +1682,195 @@
                 setShowCodeModal(true);
             };
 
-            const totalPortfolioValue = students.reduce((sum, student) => {
-                const studentValue = student.balance + student.portfolio.reduce((pSum, holding) => {
-                    const stock = stocks.find(s => s.symbol === holding.symbol) || { price: holding.avgCost };
-                    return pSum + (stock.price * holding.shares);
-                }, 0);
-                return sum + studentValue;
-            }, 0);
-
-            const avgPerformance = students.length > 0 
-                ? students.reduce((sum, student) => {
-                    const portfolioValue = student.balance + student.portfolio.reduce((pSum, holding) => {
-                        const stock = stocks.find(s => s.symbol === holding.symbol) || { price: holding.avgCost };
-                        return pSum + (stock.price * holding.shares);
-                    }, 0);
-                    const performance = ((portfolioValue - 100000) / 100000 * 100);
-                    return sum + performance;
-                }, 0) / students.length
-                : 0;
-
             return (
-                <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Teacher Dashboard</h2>
+                <div>
+                    <div className="alert-info" style={{marginBottom: '2rem'}}>
+                        <strong>Welcome, Teacher!</strong>
+                        <p style={{marginTop: '0.5rem'}}>Manage your classes and monitor student progress. Generate class codes for students to join.</p>
+                    </div>
 
-                    <div className="portfolio-grid">
-                        <div className="stat-card">
-                            <div className="stat-label">Total Students</div>
-                            <div className="stat-value">{students.length}</div>
-                        </div>
-                        
-                        <div className="stat-card">
-                            <div className="stat-label">Active Classes</div>
-                            <div className="stat-value">{teacherCodes.length}</div>
-                        </div>
-                        
-                        <div className="stat-card">
-                            <div className="stat-label">Avg Performance</div>
-                            <div className={`stat-value ${avgPerformance >= 0 ? 'stat-change positive' : 'stat-change negative'}`}>
-                                {avgPerformance >= 0 ? '+' : ''}{avgPerformance.toFixed(2)}%
-                            </div>
+                    <div className="summary-grid">
+                        <div className="summary-card">
+                            <h3 className="summary-card-title">Students</h3>
+                            <div className="balance-display">{students.length}</div>
+                            <p style={{color: 'var(--text-gray)', marginTop: '0.5rem'}}>Total enrolled students</p>
                         </div>
 
-                        <div className="stat-card">
-                            <div className="stat-label">Total Portfolio Value</div>
-                            <div className="stat-value" style={{fontSize: '1.5rem'}}>
-                                ${totalPortfolioValue.toLocaleString('en-US', {minimumFractionDigits: 2})}
-                            </div>
+                        <div className="summary-card">
+                            <h3 className="summary-card-title">Active Classes</h3>
+                            <div className="balance-display">{teacherCodes.length}</div>
+                            <p style={{color: 'var(--text-gray)', marginTop: '0.5rem'}}>Class codes created</p>
                         </div>
                     </div>
 
-                    <div className="teacher-controls">
-                        <div className="control-card" onClick={handleGenerateCode}>
-                            <div className="control-icon">🔑</div>
-                            <div className="control-title">Generate Class Code</div>
-                            <p className="control-desc">Create a new access code for students</p>
+                    <div className="table-container">
+                        <div className="table-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <div className="table-title">Class Codes</div>
+                            <button className="btn btn-primary" onClick={handleGenerateCode}>
+                                Generate New Code
+                            </button>
                         </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Class Code</th>
+                                    <th>Class Name</th>
+                                    <th>Students</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {teacherCodes.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="4">
+                                            <div className="empty-state">
+                                                <div className="empty-state-icon">🎓</div>
+                                                <p>No class codes yet. Generate one to get started!</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    teacherCodes.map((code) => {
+                                        const classStudents = students.filter(s => s.teacherCode === code.code);
+                                        return (
+                                            <tr key={code.code}>
+                                                <td><span className="class-code">{code.code}</span></td>
+                                                <td>{code.className}</td>
+                                                <td>{classStudents.length}</td>
+                                                <td>{new Date(code.createdAt).toLocaleDateString()}</td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
                     </div>
 
                     {showCodeModal && (
                         <div className="modal-overlay" onClick={() => setShowCodeModal(false)}>
                             <div className="modal" onClick={(e) => e.stopPropagation()}>
                                 <div className="modal-header">
-                                    <h2 className="modal-title">New Class Code</h2>
+                                    <h2 className="modal-title">New Class Code Generated</h2>
                                     <button className="close-btn" onClick={() => setShowCodeModal(false)}>×</button>
                                 </div>
-                                <div style={{textAlign: 'center', padding: '2rem'}}>
+                                <div className="modal-body">
                                     <p style={{marginBottom: '1rem'}}>Share this code with your students:</p>
-                                    <div style={{
-                                        fontSize: '2.5rem',
-                                        fontWeight: '700',
-                                        fontFamily: 'JetBrains Mono, monospace',
-                                        color: 'var(--accent-green)',
-                                        padding: '1.5rem',
-                                        background: 'var(--bg-tertiary)',
-                                        borderRadius: '12px',
-                                        letterSpacing: '4px'
-                                    }}>
-                                        {newCode}
+                                    <div style={{textAlign: 'center', padding: '2rem', background: 'var(--bg-light)', borderRadius: '8px'}}>
+                                        <span className="class-code" style={{fontSize: '2rem'}}>{newCode}</span>
                                     </div>
-                                    <p style={{marginTop: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem'}}>
-                                        Students will use this code during signup
+                                    <p style={{marginTop: '1rem', color: 'var(--text-gray)', fontSize: '0.9rem'}}>
+                                        Students will use this code during signup to join your class.
                                     </p>
+                                    <button 
+                                        className="btn btn-primary" 
+                                        style={{width: '100%', marginTop: '1.5rem'}}
+                                        onClick={() => setShowCodeModal(false)}
+                                    >
+                                        Done
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     )}
-
-                    <div className="table-container">
-                        <div className="table-header">
-                            <div className="table-title">Recent Student Activity</div>
-                        </div>
-                        {students.length === 0 ? (
-                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
-                                <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>No students yet</p>
-                                <p>Generate a class code to get started!</p>
-                            </div>
-                        ) : (
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Student</th>
-                                        <th>Portfolio Value</th>
-                                        <th>Performance</th>
-                                        <th>Holdings</th>
-                                        <th>Last Activity</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {students.slice(0, 10).map(student => {
-                                        const portfolioValue = student.balance + student.portfolio.reduce((sum, holding) => {
-                                            const stock = stocks.find(s => s.symbol === holding.symbol) || { price: holding.avgCost };
-                                            return sum + (stock.price * holding.shares);
-                                        }, 0);
-                                        const performance = ((portfolioValue - 100000) / 100000 * 100);
-                                        
-                                        return (
-                                            <tr key={student.id}>
-                                                <td>{student.name}</td>
-                                                <td>${portfolioValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                                                <td>
-                                                    <span className={performance >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                        {performance >= 0 ? '+' : ''}{performance.toFixed(2)}%
-                                                    </span>
-                                                </td>
-                                                <td>{student.portfolio.length}</td>
-                                                <td>{student.transactions.length > 0 ? new Date(student.transactions[0].date).toLocaleDateString() : 'No activity'}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
                 </div>
             );
         };
 
-        // ============ TEACHER STUDENTS VIEW ============
         const TeacherStudentsView = ({ students, data, setData }) => {
             const [editingStudent, setEditingStudent] = useState(null);
             const [balanceInput, setBalanceInput] = useState('');
 
             const adjustBalance = (studentId, newBalance) => {
-                const users = data.users.map(u => 
+                const updatedUsers = data.users.map(u => 
                     u.id === studentId ? { ...u, balance: parseFloat(newBalance) } : u
                 );
-                setData({...data, users});
+                setData({ ...data, users: updatedUsers });
                 setEditingStudent(null);
-                setBalanceInput('');
-            };
-
-            const resetStudent = (studentId) => {
-                if (confirm('Are you sure you want to reset this student\'s portfolio? This cannot be undone.')) {
-                    const users = data.users.map(u => 
-                        u.id === studentId ? { 
-                            ...u, 
-                            balance: 100000,
-                            portfolio: [],
-                            transactions: []
-                        } : u
-                    );
-                    setData({...data, users});
-                }
             };
 
             return (
-                <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Student Management</h2>
-
-                    <div className="table-container">
-                        <div className="table-header">
-                            <div className="table-title">All Students</div>
-                        </div>
-                        {students.length === 0 ? (
-                            <div style={{padding: '3rem', textAlign: 'center', color: 'var(--text-muted)'}}>
-                                No students enrolled yet
-                            </div>
-                        ) : (
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Student</th>
-                                        <th>Username</th>
-                                        <th>Balance</th>
-                                        <th>Holdings</th>
-                                        <th>Transactions</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {students.map(student => (
-                                        <tr key={student.id}>
-                                            <td>{student.name}</td>
-                                            <td className="stock-symbol">{student.username}</td>
-                                            <td>
-                                                {editingStudent === student.id ? (
-                                                    <div style={{display: 'flex', gap: '0.5rem'}}>
-                                                        <input
-                                                            type="number"
-                                                            className="form-input"
-                                                            style={{width: '120px', padding: '0.3rem'}}
-                                                            value={balanceInput}
-                                                            onChange={(e) => setBalanceInput(e.target.value)}
-                                                            placeholder={student.balance.toFixed(2)}
-                                                            autoFocus
-                                                        />
-                                                        <button 
-                                                            className="btn btn-primary"
-                                                            style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                            onClick={() => adjustBalance(student.id, balanceInput)}
-                                                        >
-                                                            Save
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <span>${student.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                                                )}
-                                            </td>
-                                            <td>{student.portfolio.length}</td>
-                                            <td>{student.transactions.length}</td>
-                                            <td>
-                                                <div style={{display: 'flex', gap: '0.5rem'}}>
-                                                    <button 
-                                                        className="btn btn-secondary"
-                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                        onClick={() => {
-                                                            setEditingStudent(student.id);
-                                                            setBalanceInput(student.balance.toString());
-                                                        }}
-                                                    >
-                                                        Adjust Balance
-                                                    </button>
-                                                    <button 
-                                                        className="btn btn-danger"
-                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                        onClick={() => resetStudent(student.id)}
-                                                    >
-                                                        Reset
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
+                <div className="table-container">
+                    <div className="table-header">
+                        <div className="table-title">All Students</div>
                     </div>
-
-                    {students.length > 0 && (
-                        <div className="table-container" style={{marginTop: '2rem'}}>
-                            <div className="table-header">
-                                <div className="table-title">Recent Transactions</div>
-                            </div>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Student</th>
-                                        <th>Type</th>
-                                        <th>Symbol</th>
-                                        <th>Shares</th>
-                                        <th>Price</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {students
-                                        .flatMap(s => s.transactions.map(tx => ({...tx, studentName: s.name})))
-                                        .sort((a, b) => new Date(b.date) - new Date(a.date))
-                                        .slice(0, 20)
-                                        .map(tx => (
-                                            <tr key={tx.id}>
-                                                <td>{new Date(tx.date).toLocaleDateString()}</td>
-                                                <td>{tx.studentName}</td>
-                                                <td>
-                                                    <span style={{
-                                                        fontWeight: '600',
-                                                        color: tx.type === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)'
-                                                    }}>
-                                                        {tx.type.toUpperCase()}
-                                                    </span>
-                                                </td>
-                                                <td className="stock-symbol">{tx.symbol}</td>
-                                                <td>{tx.shares}</td>
-                                                <td>${tx.price.toFixed(2)}</td>
-                                            </tr>
-                                        ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-
-        // ============ TEACHER CLASSES VIEW ============
-        const TeacherClassesView = ({ teacherCodes, data, setData }) => {
-            const [editingCode, setEditingCode] = useState(null);
-            const [editingLinks, setEditingLinks] = useState(null);
-            const [linksData, setLinksData] = useState([]);
-
-            const updateClassName = (code, newName) => {
-                const codes = data.teacherCodes.map(c => 
-                    c.code === code ? { ...c, className: newName } : c
-                );
-                setData({...data, teacherCodes: codes});
-                setEditingCode(null);
-            };
-
-            const deleteCode = (code) => {
-                if (confirm('Are you sure you want to delete this class code?')) {
-                    const codes = data.teacherCodes.filter(c => c.code !== code);
-                    setData({...data, teacherCodes: codes});
-                }
-            };
-
-            const startEditingLinks = (code) => {
-                const classCode = teacherCodes.find(c => c.code === code);
-                setLinksData(classCode.researchLinks || []);
-                setEditingLinks(code);
-            };
-
-            const saveLinks = (code) => {
-                const codes = data.teacherCodes.map(c => 
-                    c.code === code ? { ...c, researchLinks: linksData } : c
-                );
-                setData({...data, teacherCodes: codes});
-                setEditingLinks(null);
-            };
-
-            const addLink = () => {
-                setLinksData([...linksData, { name: '', url: '', description: '' }]);
-            };
-
-            const updateLink = (index, field, value) => {
-                const newLinks = [...linksData];
-                newLinks[index][field] = value;
-                setLinksData(newLinks);
-            };
-
-            const deleteLink = (index) => {
-                setLinksData(linksData.filter((_, i) => i !== index));
-            };
-
-            return (
-                <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Class Management</h2>
-
-                    <div className="table-container">
-                        <div className="table-header">
-                            <div className="table-title">Active Classes</div>
-                        </div>
-                        <table>
-                            <thead>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Balance</th>
+                                <th>Portfolio Value</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {students.length === 0 ? (
                                 <tr>
-                                    <th>Class Name</th>
-                                    <th>Access Code</th>
-                                    <th>Students</th>
-                                    <th>Research Links</th>
-                                    <th>Actions</th>
+                                    <td colSpan="5">
+                                        <div className="empty-state">
+                                            <div className="empty-state-icon">👨‍🎓</div>
+                                            <p>No students enrolled yet</p>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {teacherCodes.map(code => {
-                                    const studentCount = data.users.filter(u => u.teacherCode === code.code).length;
-                                    const linkCount = code.researchLinks?.length || 0;
+                            ) : (
+                                students.map((student) => {
+                                    const portfolioValue = student.balance + student.portfolio.reduce((sum, h) => sum + (h.shares * h.avgCost), 0);
                                     
                                     return (
-                                        <tr key={code.code}>
+                                        <tr key={student.id}>
+                                            <td>{student.name}</td>
+                                            <td>{student.username}</td>
+                                            <td className="price-cell">${student.balance.toFixed(2)}</td>
+                                            <td className="price-cell">${portfolioValue.toFixed(2)}</td>
                                             <td>
-                                                {editingCode === code.code ? (
-                                                    <input
-                                                        type="text"
-                                                        className="form-input"
-                                                        defaultValue={code.className}
-                                                        onBlur={(e) => updateClassName(code.code, e.target.value)}
-                                                        onKeyPress={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                updateClassName(code.code, e.target.value);
-                                                            }
-                                                        }}
-                                                        autoFocus
-                                                    />
-                                                ) : (
-                                                    <span onClick={() => setEditingCode(code.code)} style={{cursor: 'pointer'}}>
-                                                        {code.className}
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                <span className="stock-symbol">{code.code}</span>
-                                            </td>
-                                            <td>{studentCount}</td>
-                                            <td>{linkCount} links</td>
-                                            <td>
-                                                <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
-                                                    <button 
-                                                        className="btn btn-secondary" 
-                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                        onClick={() => setEditingCode(code.code)}
-                                                    >
-                                                        Rename
-                                                    </button>
-                                                    <button 
-                                                        className="btn btn-primary" 
-                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                        onClick={() => startEditingLinks(code.code)}
-                                                    >
-                                                        Edit Links
-                                                    </button>
-                                                    <button 
-                                                        className="btn btn-danger" 
-                                                        style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                        onClick={() => deleteCode(code.code)}
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
+                                                <button 
+                                                    className="btn btn-secondary"
+                                                    style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
+                                                    onClick={() => {
+                                                        setEditingStudent(student.id);
+                                                        setBalanceInput(student.balance.toString());
+                                                    }}
+                                                >
+                                                    Adjust Balance
+                                                </button>
                                             </td>
                                         </tr>
                                     );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                })
+                            )}
+                        </tbody>
+                    </table>
 
-                    {/* Research Links Editor Modal */}
-                    {editingLinks && (
-                        <div className="modal-overlay" onClick={() => setEditingLinks(null)}>
-                            <div className="modal" onClick={(e) => e.stopPropagation()} style={{maxWidth: '800px'}}>
+                    {editingStudent && (
+                        <div className="modal-overlay" onClick={() => setEditingStudent(null)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
                                 <div className="modal-header">
-                                    <h2 className="modal-title">Edit Research Links</h2>
-                                    <button className="close-btn" onClick={() => setEditingLinks(null)}>×</button>
+                                    <h2 className="modal-title">Adjust Student Balance</h2>
+                                    <button className="close-btn" onClick={() => setEditingStudent(null)}>×</button>
                                 </div>
-
-                                <div style={{maxHeight: '60vh', overflowY: 'auto', padding: '1rem'}}>
-                                    {linksData.map((link, index) => (
-                                        <div key={index} style={{
-                                            background: 'var(--bg-tertiary)', 
-                                            padding: '1rem', 
-                                            borderRadius: '8px', 
-                                            marginBottom: '1rem',
-                                            border: '1px solid var(--border)'
-                                        }}>
-                                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
-                                                <strong>Link {index + 1}</strong>
-                                                <button 
-                                                    className="btn btn-danger" 
-                                                    style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
-                                                    onClick={() => deleteLink(index)}
-                                                >
-                                                    Remove
-                                                </button>
-                                            </div>
-                                            <div className="form-group">
-                                                <label className="form-label">Name</label>
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    value={link.name}
-                                                    onChange={(e) => updateLink(index, 'name', e.target.value)}
-                                                    placeholder="e.g., Yahoo Finance"
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label className="form-label">URL</label>
-                                                <input
-                                                    type="url"
-                                                    className="form-input"
-                                                    value={link.url}
-                                                    onChange={(e) => updateLink(index, 'url', e.target.value)}
-                                                    placeholder="https://..."
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label className="form-label">Description</label>
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    value={link.description}
-                                                    onChange={(e) => updateLink(index, 'description', e.target.value)}
-                                                    placeholder="Brief description of the resource"
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-
+                                <div className="modal-body">
+                                    <div className="form-group">
+                                        <label className="form-label">New Balance</label>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            value={balanceInput}
+                                            onChange={(e) => setBalanceInput(e.target.value)}
+                                            step="0.01"
+                                        />
+                                    </div>
                                     <button 
-                                        className="btn btn-secondary" 
-                                        style={{width: '100%', marginTop: '1rem'}}
-                                        onClick={addLink}
-                                    >
-                                        + Add New Link
-                                    </button>
-                                </div>
-
-                                <div style={{padding: '1rem', borderTop: '1px solid var(--border)', marginTop: '1rem'}}>
-                                    <button 
-                                        className="btn btn-primary" 
+                                        className="btn btn-primary"
                                         style={{width: '100%'}}
-                                        onClick={() => saveLinks(editingLinks)}
+                                        onClick={() => adjustBalance(editingStudent, balanceInput)}
                                     >
-                                        Save Changes
+                                        Update Balance
                                     </button>
                                 </div>
                             </div>
                         </div>
                     )}
-                </div>
-            );
-        };
-
-        // ============ TEACHER REPORTS VIEW ============
-        const TeacherReportsView = ({ students, stocks = [] }) => {
-            const topPerformers = [...students]
-                .map(student => {
-                    const portfolioValue = student.balance + student.portfolio.reduce((sum, holding) => {
-                        const stock = stocks.find(s => s.symbol === holding.symbol) || { symbol: holding.symbol, price: holding.avgCost };
-                        return sum + (stock ? stock.price * holding.shares : 0);
-                    }, 0);
-                    const performance = ((portfolioValue - 100000) / 100000 * 100);
-                    return { ...student, portfolioValue, performance };
-                })
-                .sort((a, b) => b.performance - a.performance)
-                .slice(0, 10);
-
-            return (
-                <div className="fade-in">
-                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Performance Reports</h2>
-
-                    <div className="table-container">
-                        <div className="table-header">
-                            <div className="table-title">Top Performers</div>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Student</th>
-                                    <th>Portfolio Value</th>
-                                    <th>Performance</th>
-                                    <th>Holdings</th>
-                                    <th>Transactions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {topPerformers.map((student, index) => (
-                                    <tr key={student.id}>
-                                        <td>
-                                            <span style={{
-                                                fontSize: '1.5rem',
-                                                fontWeight: '700',
-                                                color: index === 0 ? 'var(--accent-yellow)' : 
-                                                       index === 1 ? 'var(--text-secondary)' : 
-                                                       index === 2 ? '#cd7f32' : 'var(--text-muted)'
-                                            }}>
-                                                {index + 1}
-                                            </span>
-                                        </td>
-                                        <td>{student.name}</td>
-                                        <td>${student.portfolioValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                                        <td>
-                                            <span className={student.performance >= 0 ? 'stat-change positive' : 'stat-change negative'}>
-                                                {student.performance >= 0 ? '+' : ''}{student.performance.toFixed(2)}%
-                                            </span>
-                                        </td>
-                                        <td>{student.portfolio.length}</td>
-                                        <td>{student.transactions.length}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
             );
         };
