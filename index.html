@@ -637,7 +637,7 @@
         const { useState, useEffect } = React;
 
         // ============ CONSTANTS ============
-        const FINNHUB_API_KEY = 'd563p09r01qu3qo87hugd563p09r01qu3qo87hv0';
+        const FINNHUB_API_KEY = 'd5e0i19r01qjckl13iagd5e0i19r01qjckl13ib0';
         const DEFAULT_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'JPM'];
 
         // ============ DATA MANAGEMENT ============
@@ -985,9 +985,80 @@
                     setLoading(false);
                 };
                 loadInitialStocks();
+
+                // Check and apply interest if due
+                const checkAndApplyInterest = () => {
+                    const teacherCode = data.teacherCodes.find(c => c.code === user.teacherCode);
+                    if (!teacherCode || !teacherCode.interestRate || teacherCode.interestRate <= 0) {
+                        return; // No interest configured
+                    }
+
+                    const lastInterestDate = teacherCode.lastInterestDate ? new Date(teacherCode.lastInterestDate) : new Date();
+                    const daysSinceLastInterest = Math.floor((new Date() - lastInterestDate) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysSinceLastInterest >= teacherCode.interestFrequency) {
+                        // Calculate interest
+                        const interestAmount = user.balance * (teacherCode.interestRate / 100);
+                        const newBalance = user.balance + interestAmount;
+
+                        // Create interest transaction
+                        const transaction = {
+                            id: Date.now(),
+                            symbol: 'INTEREST',
+                            type: 'interest',
+                            shares: 0,
+                            price: 0,
+                            total: interestAmount,
+                            date: new Date().toISOString()
+                        };
+
+                        // Update user with interest
+                        const updatedUser = {
+                            ...user,
+                            balance: newBalance,
+                            transactions: [transaction, ...user.transactions]
+                        };
+                        
+                        updateUser(updatedUser);
+
+                        console.log(`Applied ${teacherCode.interestRate}% interest: $${interestAmount.toFixed(2)}`);
+                    }
+                };
+                
+                checkAndApplyInterest();
+
+                // Auto-refresh stock prices every 15 minutes
+                const refreshInterval = setInterval(async () => {
+                    try {
+                        console.log('Auto-refreshing stock prices...');
+                        const refreshedStocks = await searchStocks('');
+                        setStocks(refreshedStocks);
+                    } catch (error) {
+                        console.error('Auto-refresh error:', error);
+                    }
+                }, 15 * 60 * 1000); // 15 minutes in milliseconds
+
+                // Cleanup interval on unmount
+                return () => clearInterval(refreshInterval);
             }, []);
 
-            const executeTrade = (symbol, shares, type) => {
+            const refreshStockPrices = async () => {
+                // Refresh prices for all stocks in portfolio and currently displayed stocks
+                const uniqueSymbols = [...new Set([
+                    ...user.portfolio.map(h => h.symbol),
+                    ...stocks.map(s => s.symbol)
+                ])];
+                
+                const updatedStocks = [];
+                for (const symbol of uniqueSymbols) {
+                    const stock = await fetchStockPrice(symbol);
+                    updatedStocks.push(stock);
+                    await new Promise(resolve => setTimeout(resolve, 100)); // Small delay to avoid rate limiting
+                }
+                setStocks(updatedStocks);
+            };
+
+            const executeTrade = async (symbol, shares, type) => {
                 const stock = stocks.find(s => s.symbol === symbol);
                 if (!stock) return;
 
@@ -1056,6 +1127,9 @@
                 }
 
                 setShowTradeModal(false);
+                
+                // Refresh stock prices after trade
+                await refreshStockPrices();
             };
 
             const handleSearch = async () => {
@@ -1267,6 +1341,51 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Market Movers - at bottom of summary */}
+                    {(() => {
+                        const sortedStocks = [...stocks].sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+                        const topGainers = sortedStocks.filter(s => s.changePercent > 0).slice(0, 3);
+                        const topLosers = sortedStocks.filter(s => s.changePercent < 0).slice(0, 3);
+                        
+                        return (
+                            <>
+                                {topGainers.length > 0 && (
+                                    <div style={{marginTop: '2rem'}}>
+                                        <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📈 Market Movers - Top Gainers</h3>
+                                        <div className="movers-grid">
+                                            {topGainers.map(stock => (
+                                                <div key={stock.symbol} className="mover-card gainer">
+                                                    <div className="mover-symbol">{stock.symbol}</div>
+                                                    <div className="mover-price">${stock.price.toFixed(2)}</div>
+                                                    <div className="mover-change gain-positive">
+                                                        +{stock.changePercent.toFixed(2)}%
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {topLosers.length > 0 && (
+                                    <div style={{marginTop: '2rem'}}>
+                                        <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📉 Market Movers - Top Losers</h3>
+                                        <div className="movers-grid">
+                                            {topLosers.map(stock => (
+                                                <div key={stock.symbol} className="mover-card loser">
+                                                    <div className="mover-symbol">{stock.symbol}</div>
+                                                    <div className="mover-price">${stock.price.toFixed(2)}</div>
+                                                    <div className="mover-change gain-negative">
+                                                        {stock.changePercent.toFixed(2)}%
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
             );
         };
@@ -1277,11 +1396,6 @@
                 const stock = stocks.find(s => s.symbol === holding.symbol);
                 return sum + (stock ? stock.price * holding.shares : 0);
             }, 0);
-
-            // Market Movers
-            const sortedStocks = [...stocks].sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
-            const topGainers = sortedStocks.filter(s => s.changePercent > 0).slice(0, 3);
-            const topLosers = sortedStocks.filter(s => s.changePercent < 0).slice(0, 3);
 
             return (
                 <div>
@@ -1301,40 +1415,62 @@
                         </div>
                     </div>
 
-                    {topGainers.length > 0 && (
-                        <div style={{marginBottom: '2rem'}}>
-                            <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📈 Market Movers - Top Gainers</h3>
-                            <div className="movers-grid">
-                                {topGainers.map(stock => (
-                                    <div key={stock.symbol} className="mover-card gainer">
-                                        <div className="mover-symbol">{stock.symbol}</div>
-                                        <div className="mover-price">${stock.price.toFixed(2)}</div>
-                                        <div className="mover-change gain-positive">
-                                            +{stock.changePercent.toFixed(2)}%
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                    {/* Search Results - Right under search bar */}
+                    {loading && (
+                        <div style={{textAlign: 'center', padding: '2rem'}}>
+                            <div className="spinner"></div>
                         </div>
                     )}
 
-                    {topLosers.length > 0 && (
-                        <div style={{marginBottom: '2rem'}}>
-                            <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📉 Market Movers - Top Losers</h3>
-                            <div className="movers-grid">
-                                {topLosers.map(stock => (
-                                    <div key={stock.symbol} className="mover-card loser">
-                                        <div className="mover-symbol">{stock.symbol}</div>
-                                        <div className="mover-price">${stock.price.toFixed(2)}</div>
-                                        <div className="mover-change gain-negative">
-                                            {stock.changePercent.toFixed(2)}%
-                                        </div>
-                                    </div>
-                                ))}
+                    {!loading && searchQuery && stocks.length > 0 && (
+                        <div className="table-container" style={{marginBottom: '2rem'}}>
+                            <div className="table-header">
+                                <div className="table-title">Search Results</div>
                             </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Last Price</th>
+                                        <th>Change</th>
+                                        <th>% Change</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stocks.map((stock) => (
+                                        <tr key={stock.symbol}>
+                                            <td className="symbol-cell">{stock.symbol}</td>
+                                            <td className="price-cell">${stock.price.toFixed(2)}</td>
+                                            <td className={stock.change >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                {stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}
+                                            </td>
+                                            <td className={stock.changePercent >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+                                            </td>
+                                            <td>
+                                                <button 
+                                                    className="btn btn-primary"
+                                                    style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
+                                                    onClick={() => onTrade(stock)}
+                                                >
+                                                    Trade
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
 
+                    {!loading && searchQuery && stocks.length === 0 && (
+                        <div className="alert-info" style={{marginBottom: '2rem'}}>
+                            No stocks found for "{searchQuery}". Try searching by stock symbol (e.g., AAPL, MSFT, TSLA).
+                        </div>
+                    )}
+
+                    {/* Your Positions Table */}
                     <div className="table-container">
                         <div className="table-header">
                             <div className="table-title">Your Positions</div>
@@ -1407,54 +1543,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    {loading && (
-                        <div style={{textAlign: 'center', padding: '2rem'}}>
-                            <div className="spinner"></div>
-                        </div>
-                    )}
-
-                    {!loading && stocks.length > 0 && user.portfolio.length === 0 && (
-                        <div className="table-container" style={{marginTop: '2rem'}}>
-                            <div className="table-header">
-                                <div className="table-title">Available Stocks</div>
-                            </div>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Symbol</th>
-                                        <th>Last Price</th>
-                                        <th>Change</th>
-                                        <th>% Change</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {stocks.map((stock) => (
-                                        <tr key={stock.symbol}>
-                                            <td className="symbol-cell">{stock.symbol}</td>
-                                            <td className="price-cell">${stock.price.toFixed(2)}</td>
-                                            <td className={stock.change >= 0 ? 'gain-positive' : 'gain-negative'}>
-                                                {stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}
-                                            </td>
-                                            <td className={stock.changePercent >= 0 ? 'gain-positive' : 'gain-negative'}>
-                                                {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
-                                            </td>
-                                            <td>
-                                                <button 
-                                                    className="btn btn-primary"
-                                                    style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
-                                                    onClick={() => onTrade(stock)}
-                                                >
-                                                    Trade
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
                 </div>
             );
         };
@@ -1472,13 +1560,14 @@
                                 <th>Date</th>
                                 <th>Description</th>
                                 <th>Amount</th>
-                                <th>Cash Balance</th>
+                                <th>Previous Balance</th>
+                                <th>New Balance</th>
                             </tr>
                         </thead>
                         <tbody>
                             {transactions.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4">
+                                    <td colSpan="5">
                                         <div className="empty-state">
                                             <div className="empty-state-icon">📋</div>
                                             <p>No transactions yet</p>
@@ -1493,22 +1582,31 @@
                                         year: 'numeric'
                                     });
 
-                                    // Calculate running balance
+                                    // Calculate running balance BEFORE this transaction
                                     const laterTransactions = transactions.slice(0, index);
-                                    const runningBalance = 100000 - laterTransactions.reduce((sum, t) => {
+                                    const previousBalance = 100000 - laterTransactions.reduce((sum, t) => {
                                         return sum + (t.type === 'buy' ? t.total : -t.total);
                                     }, 0);
+                                    
+                                    // Calculate balance AFTER this transaction
+                                    const newBalance = transaction.type === 'buy' 
+                                        ? previousBalance - transaction.total 
+                                        : previousBalance + transaction.total;
 
                                     return (
                                         <tr key={transaction.id}>
                                             <td>{date}</td>
                                             <td>
-                                                YOU {transaction.type.toUpperCase()} {transaction.symbol} ({transaction.shares} shares) (Cash)
+                                                {transaction.type === 'interest' 
+                                                    ? 'INTEREST EARNED (Cash)' 
+                                                    : `YOU ${transaction.type.toUpperCase()} ${transaction.symbol} (${transaction.shares} shares) (Cash)`
+                                                }
                                             </td>
                                             <td className={transaction.type === 'buy' ? 'gain-negative' : 'gain-positive'}>
                                                 {transaction.type === 'buy' ? '-' : '+'}${transaction.total.toFixed(2)}
                                             </td>
-                                            <td className="price-cell">${runningBalance.toFixed(2)}</td>
+                                            <td className="price-cell">${previousBalance.toFixed(2)}</td>
+                                            <td className="price-cell">${newBalance.toFixed(2)}</td>
                                         </tr>
                                     );
                                 })
@@ -2005,6 +2103,9 @@
         const TeacherClassesView = ({ teacherCodes, data, setData }) => {
             const [editingLinks, setEditingLinks] = useState(null);
             const [linksData, setLinksData] = useState([]);
+            const [editingInterest, setEditingInterest] = useState(null);
+            const [interestRate, setInterestRate] = useState('');
+            const [interestFrequency, setInterestFrequency] = useState('');
 
             const startEditingLinks = (code) => {
                 const teacherCode = data.teacherCodes.find(c => c.code === code);
@@ -2015,6 +2116,24 @@
                     { name: 'SEC Filings (EDGAR)', url: 'https://www.sec.gov/edgar', description: 'Official company filings and reports' }
                 ]);
                 setEditingLinks(code);
+            };
+
+            const startEditingInterest = (code) => {
+                const teacherCode = data.teacherCodes.find(c => c.code === code);
+                setInterestRate(teacherCode?.interestRate || '0');
+                setInterestFrequency(teacherCode?.interestFrequency || '30');
+                setEditingInterest(code);
+            };
+
+            const saveInterest = (code) => {
+                const rate = parseFloat(interestRate) || 0;
+                const frequency = parseInt(interestFrequency) || 30;
+                
+                const updatedCodes = data.teacherCodes.map(c => 
+                    c.code === code ? { ...c, interestRate: rate, interestFrequency: frequency, lastInterestDate: new Date().toISOString() } : c
+                );
+                setData({ ...data, teacherCodes: updatedCodes });
+                setEditingInterest(null);
             };
 
             const saveLinks = (code) => {
@@ -2073,13 +2192,14 @@
                                     <th>Class Name</th>
                                     <th>Students</th>
                                     <th>Research Links</th>
+                                    <th>Interest</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {teacherCodes.length === 0 ? (
                                     <tr>
-                                        <td colSpan="5">
+                                        <td colSpan="6">
                                             <div className="empty-state">
                                                 <div className="empty-state-icon">🎓</div>
                                                 <p>No classes yet. Generate a class code from the Overview tab!</p>
@@ -2090,6 +2210,8 @@
                                     teacherCodes.map((code) => {
                                         const classStudents = data.users.filter(u => u.teacherCode === code.code);
                                         const linksCount = code.researchLinks?.length || 4; // default links
+                                        const interestRate = code.interestRate || 0;
+                                        const interestFrequency = code.interestFrequency || 30;
                                         
                                         return (
                                             <tr key={code.code}>
@@ -2105,14 +2227,22 @@
                                                 </td>
                                                 <td>{classStudents.length}</td>
                                                 <td>{linksCount} links</td>
+                                                <td>{interestRate}% every {interestFrequency} days</td>
                                                 <td>
-                                                    <div style={{display: 'flex', gap: '0.5rem'}}>
+                                                    <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
                                                         <button 
                                                             className="btn btn-primary"
                                                             style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
                                                             onClick={() => startEditingLinks(code.code)}
                                                         >
                                                             Edit Links
+                                                        </button>
+                                                        <button 
+                                                            className="btn btn-secondary"
+                                                            style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
+                                                            onClick={() => startEditingInterest(code.code)}
+                                                        >
+                                                            Edit Interest
                                                         </button>
                                                         <button 
                                                             className="btn btn-danger"
@@ -2208,6 +2338,70 @@
                                         onClick={() => saveLinks(editingLinks)}
                                     >
                                         Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Interest Rate Editor Modal */}
+                    {editingInterest && (
+                        <div className="modal-overlay" onClick={() => setEditingInterest(null)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2 className="modal-title">Edit Interest Settings</h2>
+                                    <button className="close-btn" onClick={() => setEditingInterest(null)}>×</button>
+                                </div>
+
+                                <div className="modal-body">
+                                    <div className="alert-info" style={{marginBottom: '1.5rem'}}>
+                                        <strong>How Interest Works</strong>
+                                        <p style={{marginTop: '0.5rem', fontSize: '0.9rem'}}>
+                                            Interest is automatically applied to student cash balances. For example, 5% every 30 days means 
+                                            students earn 5% interest on their cash balance once per month.
+                                        </p>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label">Interest Rate (%)</label>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            value={interestRate}
+                                            onChange={(e) => setInterestRate(e.target.value)}
+                                            placeholder="e.g., 5 for 5%"
+                                            step="0.1"
+                                            min="0"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label">Frequency (Days)</label>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            value={interestFrequency}
+                                            onChange={(e) => setInterestFrequency(e.target.value)}
+                                            placeholder="e.g., 30 for monthly"
+                                            min="1"
+                                        />
+                                    </div>
+
+                                    <div style={{background: 'var(--bg-light)', padding: '1rem', borderRadius: '4px', marginTop: '1rem'}}>
+                                        <strong>Example:</strong>
+                                        <p style={{marginTop: '0.5rem', color: 'var(--text-gray)', fontSize: '0.9rem'}}>
+                                            With {interestRate || 0}% interest every {interestFrequency || 30} days, a student with 
+                                            $10,000 cash would earn ${((10000 * (parseFloat(interestRate) || 0) / 100).toFixed(2))} 
+                                            every {interestFrequency || 30} days.
+                                        </p>
+                                    </div>
+
+                                    <button 
+                                        className="btn btn-primary"
+                                        style={{width: '100%', marginTop: '1.5rem'}}
+                                        onClick={() => saveInterest(editingInterest)}
+                                    >
+                                        Save Interest Settings
                                     </button>
                                 </div>
                             </div>
