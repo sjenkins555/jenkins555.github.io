@@ -767,6 +767,9 @@
                 const users = asTeacher ? data.teachers : data.users;
                 const user = users.find(u => u.username === username && u.password === password);
                 if (user) {
+                    if (!asTeacher && user.isPaused) {
+                        return 'paused'; // Account is paused
+                    }
                     setCurrentUser(user);
                     setIsTeacher(asTeacher);
                     return true;
@@ -845,7 +848,9 @@
 
                 if (view === 'login') {
                     const success = login(formData.username, formData.password, formData.isTeacher);
-                    if (!success) {
+                    if (success === 'paused') {
+                        setError('Your account has been paused by your teacher. Please contact them for assistance.');
+                    } else if (!success) {
                         setError('Invalid username or password');
                     }
                 } else {
@@ -972,6 +977,8 @@
             const [stocks, setStocks] = useState([]);
             const [searchQuery, setSearchQuery] = useState('');
             const [loading, setLoading] = useState(false);
+            const [lastRefresh, setLastRefresh] = useState(null);
+            const [refreshCooldown, setRefreshCooldown] = useState(0);
 
             useEffect(() => {
                 const loadInitialStocks = async () => {
@@ -986,46 +993,85 @@
                 };
                 loadInitialStocks();
 
-                // Check and apply interest if due
-                const checkAndApplyInterest = () => {
+                // Check and apply interest and dividends if due
+                const checkAndApplyInterestDividends = () => {
                     const teacherCode = data.teacherCodes.find(c => c.code === user.teacherCode);
-                    if (!teacherCode || !teacherCode.interestRate || teacherCode.interestRate <= 0) {
-                        return; // No interest configured
+                    if (!teacherCode) return;
+
+                    // Check for per-student overrides or use class defaults
+                    const studentInterestRate = user.interestRateOverride !== undefined ? user.interestRateOverride : teacherCode.interestRate;
+                    const studentInterestFreq = user.interestFrequencyOverride !== undefined ? user.interestFrequencyOverride : teacherCode.interestFrequency;
+                    const studentDividendAmount = user.dividendAmountOverride !== undefined ? user.dividendAmountOverride : teacherCode.dividendAmount;
+                    const studentDividendFreq = user.dividendFrequencyOverride !== undefined ? user.dividendFrequencyOverride : teacherCode.dividendFrequency;
+
+                    let updatedUser = { ...user };
+                    let hasUpdates = false;
+
+                    // Apply Interest
+                    if (studentInterestRate && studentInterestRate > 0 && studentInterestFreq) {
+                        const lastInterestDate = user.lastInterestDate ? new Date(user.lastInterestDate) : new Date(user.createdDate || Date.now());
+                        const daysSinceLastInterest = Math.floor((new Date() - lastInterestDate) / (1000 * 60 * 60 * 24));
+                        
+                        if (daysSinceLastInterest >= studentInterestFreq) {
+                            const interestAmount = updatedUser.balance * (studentInterestRate / 100);
+                            updatedUser.balance += interestAmount;
+                            updatedUser.lastInterestDate = new Date().toISOString();
+                            
+                            const transaction = {
+                                id: Date.now() + Math.random(),
+                                symbol: 'INTEREST',
+                                type: 'interest',
+                                shares: 0,
+                                price: 0,
+                                total: interestAmount,
+                                date: new Date().toISOString()
+                            };
+                            updatedUser.transactions = [transaction, ...updatedUser.transactions];
+                            hasUpdates = true;
+                            console.log(`Applied ${studentInterestRate}% interest: $${interestAmount.toFixed(2)}`);
+                        }
                     }
 
-                    const lastInterestDate = teacherCode.lastInterestDate ? new Date(teacherCode.lastInterestDate) : new Date();
-                    const daysSinceLastInterest = Math.floor((new Date() - lastInterestDate) / (1000 * 60 * 60 * 24));
-                    
-                    if (daysSinceLastInterest >= teacherCode.interestFrequency) {
-                        // Calculate interest
-                        const interestAmount = user.balance * (teacherCode.interestRate / 100);
-                        const newBalance = user.balance + interestAmount;
-
-                        // Create interest transaction
-                        const transaction = {
-                            id: Date.now(),
-                            symbol: 'INTEREST',
-                            type: 'interest',
-                            shares: 0,
-                            price: 0,
-                            total: interestAmount,
-                            date: new Date().toISOString()
-                        };
-
-                        // Update user with interest
-                        const updatedUser = {
-                            ...user,
-                            balance: newBalance,
-                            transactions: [transaction, ...user.transactions]
-                        };
+                    // Apply Dividend
+                    if (studentDividendAmount && studentDividendAmount > 0 && studentDividendFreq) {
+                        const lastDividendDate = user.lastDividendDate ? new Date(user.lastDividendDate) : new Date(user.createdDate || Date.now());
+                        const daysSinceLastDividend = Math.floor((new Date() - lastDividendDate) / (1000 * 60 * 60 * 24));
                         
-                        updateUser(updatedUser);
+                        let daysRequired = 1;
+                        switch(studentDividendFreq) {
+                            case 'daily': daysRequired = 1; break;
+                            case 'bi-daily': daysRequired = 2; break;
+                            case 'tri-daily': daysRequired = 3; break;
+                            case 'weekly': daysRequired = 7; break;
+                            case 'bi-weekly': daysRequired = 14; break;
+                            case 'monthly': daysRequired = 30; break;
+                        }
+                        
+                        if (daysSinceLastDividend >= daysRequired) {
+                            updatedUser.balance += studentDividendAmount;
+                            updatedUser.lastDividendDate = new Date().toISOString();
+                            
+                            const transaction = {
+                                id: Date.now() + Math.random() + 0.1,
+                                symbol: 'DIVIDEND',
+                                type: 'dividend',
+                                shares: 0,
+                                price: 0,
+                                total: studentDividendAmount,
+                                date: new Date().toISOString()
+                            };
+                            updatedUser.transactions = [transaction, ...updatedUser.transactions];
+                            hasUpdates = true;
+                            console.log(`Applied class dividend: $${studentDividendAmount.toFixed(2)}`);
+                        }
+                    }
 
-                        console.log(`Applied ${teacherCode.interestRate}% interest: $${interestAmount.toFixed(2)}`);
+                    if (hasUpdates) {
+                        updateUser(updatedUser);
                     }
                 };
                 
-                checkAndApplyInterest();
+                checkAndApplyInterestDividends();
 
                 // Auto-refresh stock prices every 15 minutes
                 const refreshInterval = setInterval(async () => {
@@ -1041,6 +1087,35 @@
                 // Cleanup interval on unmount
                 return () => clearInterval(refreshInterval);
             }, []);
+
+            // Cooldown timer effect
+            useEffect(() => {
+                if (refreshCooldown > 0) {
+                    const timer = setTimeout(() => {
+                        setRefreshCooldown(refreshCooldown - 1);
+                    }, 1000);
+                    return () => clearTimeout(timer);
+                }
+            }, [refreshCooldown]);
+
+            const manualRefresh = async () => {
+                if (refreshCooldown > 0) {
+                    alert(`Please wait ${Math.floor(refreshCooldown / 60)}:${(refreshCooldown % 60).toString().padStart(2, '0')} before refreshing again`);
+                    return;
+                }
+
+                setLoading(true);
+                try {
+                    await refreshStockPrices();
+                    setLastRefresh(new Date());
+                    setRefreshCooldown(10 * 60); // 10 minute cooldown
+                    alert('Portfolio prices updated!');
+                } catch (error) {
+                    console.error('Refresh error:', error);
+                    alert('Error refreshing prices. Please try again.');
+                }
+                setLoading(false);
+            };
 
             const refreshStockPrices = async () => {
                 // Refresh prices for all stocks in portfolio and currently displayed stocks
@@ -1162,6 +1237,12 @@
                                     ${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                                 </div>
                             </div>
+                            <div className="balance-info">
+                                <div className="balance-label">Cash Balance</div>
+                                <div className="balance-value" style={{color: 'var(--primary-green)'}}>
+                                    ${user.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                </div>
+                            </div>
                             <button className="btn btn-secondary" onClick={logout}>Logout</button>
                         </div>
                     </header>
@@ -1202,6 +1283,9 @@
                                     totalGain={totalGain}
                                     totalGainPercent={totalGainPercent}
                                     stocks={stocks}
+                                    onRefresh={manualRefresh}
+                                    refreshCooldown={refreshCooldown}
+                                    loading={loading}
                                 />
                             )}
 
@@ -1217,6 +1301,8 @@
                                     setSearchQuery={setSearchQuery}
                                     onSearch={handleSearch}
                                     loading={loading}
+                                    onRefresh={manualRefresh}
+                                    refreshCooldown={refreshCooldown}
                                 />
                             )}
 
@@ -1243,9 +1329,23 @@
         };
 
         // ============ SUMMARY VIEW ============
-        const SummaryView = ({ user, totalValue, totalGain, totalGainPercent, stocks }) => {
+        const SummaryView = ({ user, totalValue, totalGain, totalGainPercent, stocks, onRefresh, refreshCooldown, loading }) => {
             return (
                 <div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem'}}>
+                        <h2 style={{fontSize: '1.5rem', margin: 0}}>Portfolio Summary</h2>
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={onRefresh}
+                            disabled={refreshCooldown > 0 || loading}
+                        >
+                            {loading ? 'Refreshing...' : refreshCooldown > 0 
+                                ? `Refresh (${Math.floor(refreshCooldown / 60)}:${(refreshCooldown % 60).toString().padStart(2, '0')})`
+                                : '🔄 Refresh Prices'
+                            }
+                        </button>
+                    </div>
+
                     <div className="summary-grid">
                         <div className="summary-card">
                             <h3 className="summary-card-title">Balance</h3>
@@ -1352,7 +1452,7 @@
                             <>
                                 {topGainers.length > 0 && (
                                     <div style={{marginTop: '2rem'}}>
-                                        <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📈 Market Movers - Top Gainers</h3>
+                                        <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📈 Your Market Movers - Top Gainers</h3>
                                         <div className="movers-grid">
                                             {topGainers.map(stock => (
                                                 <div key={stock.symbol} className="mover-card gainer">
@@ -1369,7 +1469,7 @@
 
                                 {topLosers.length > 0 && (
                                     <div style={{marginTop: '2rem'}}>
-                                        <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📉 Market Movers - Top Losers</h3>
+                                        <h3 style={{marginBottom: '1rem', color: 'var(--text-dark)'}}>📉 Your Market Movers - Top Losers</h3>
                                         <div className="movers-grid">
                                             {topLosers.map(stock => (
                                                 <div key={stock.symbol} className="mover-card loser">
@@ -1391,7 +1491,7 @@
         };
 
         // ============ POSITIONS VIEW ============
-        const PositionsView = ({ user, stocks, onTrade, searchQuery, setSearchQuery, onSearch, loading }) => {
+        const PositionsView = ({ user, stocks, onTrade, searchQuery, setSearchQuery, onSearch, loading, onRefresh, refreshCooldown }) => {
             const totalValue = user.balance + user.portfolio.reduce((sum, holding) => {
                 const stock = stocks.find(s => s.symbol === holding.symbol);
                 return sum + (stock ? stock.price * holding.shares : 0);
@@ -1399,8 +1499,8 @@
 
             return (
                 <div>
-                    <div className="search-container">
-                        <div className="search-box">
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem'}}>
+                        <div className="search-box" style={{flex: 1}}>
                             <input
                                 type="text"
                                 className="search-input"
@@ -1413,6 +1513,17 @@
                                 {loading ? 'Searching...' : 'Search'}
                             </button>
                         </div>
+                        <button 
+                            className="btn btn-secondary" 
+                            onClick={onRefresh}
+                            disabled={refreshCooldown > 0 || loading}
+                            style={{whiteSpace: 'nowrap'}}
+                        >
+                            {loading ? 'Refreshing...' : refreshCooldown > 0 
+                                ? `Refresh (${Math.floor(refreshCooldown / 60)}:${(refreshCooldown % 60).toString().padStart(2, '0')})`
+                                : '🔄 Refresh'
+                            }
+                        </button>
                     </div>
 
                     {/* Search Results - Right under search bar */}
@@ -1599,6 +1710,8 @@
                                             <td>
                                                 {transaction.type === 'interest' 
                                                     ? 'INTEREST EARNED (Cash)' 
+                                                    : transaction.type === 'dividend'
+                                                    ? 'CLASS DIVIDEND (Cash)'
                                                     : `YOU ${transaction.type.toUpperCase()} ${transaction.symbol} (${transaction.shares} shares) (Cash)`
                                                 }
                                             </td>
@@ -1865,6 +1978,12 @@
                             >
                                 Classes
                             </button>
+                            <button 
+                                className={`tab ${activeTab === 'management' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('management')}
+                            >
+                                Student Management
+                            </button>
                         </div>
 
                         <div className="fade-in">
@@ -1887,6 +2006,15 @@
                             {activeTab === 'classes' && (
                                 <TeacherClassesView 
                                     teacherCodes={data.teacherCodes.filter(c => c.teacherId === teacher.id)}
+                                    data={data}
+                                    setData={setData}
+                                />
+                            )}
+
+                            {activeTab === 'management' && (
+                                <StudentManagementView 
+                                    teacherCodes={data.teacherCodes.filter(c => c.teacherId === teacher.id)}
+                                    students={students}
                                     data={data}
                                     setData={setData}
                                 />
@@ -2106,6 +2234,8 @@
             const [editingInterest, setEditingInterest] = useState(null);
             const [interestRate, setInterestRate] = useState('');
             const [interestFrequency, setInterestFrequency] = useState('');
+            const [dividendAmount, setDividendAmount] = useState('');
+            const [dividendFrequency, setDividendFrequency] = useState('');
 
             const startEditingLinks = (code) => {
                 const teacherCode = data.teacherCodes.find(c => c.code === code);
@@ -2122,15 +2252,26 @@
                 const teacherCode = data.teacherCodes.find(c => c.code === code);
                 setInterestRate(teacherCode?.interestRate || '0');
                 setInterestFrequency(teacherCode?.interestFrequency || '30');
+                setDividendAmount(teacherCode?.dividendAmount || '0');
+                setDividendFrequency(teacherCode?.dividendFrequency || 'weekly');
                 setEditingInterest(code);
             };
 
             const saveInterest = (code) => {
                 const rate = parseFloat(interestRate) || 0;
                 const frequency = parseInt(interestFrequency) || 30;
+                const divAmount = parseFloat(dividendAmount) || 0;
+                const divFreq = dividendFrequency || 'weekly';
                 
                 const updatedCodes = data.teacherCodes.map(c => 
-                    c.code === code ? { ...c, interestRate: rate, interestFrequency: frequency, lastInterestDate: new Date().toISOString() } : c
+                    c.code === code ? { 
+                        ...c, 
+                        interestRate: rate, 
+                        interestFrequency: frequency,
+                        dividendAmount: divAmount,
+                        dividendFrequency: divFreq,
+                        lastInterestDate: new Date().toISOString() 
+                    } : c
                 );
                 setData({ ...data, teacherCodes: updatedCodes });
                 setEditingInterest(null);
@@ -2209,9 +2350,11 @@
                                 ) : (
                                     teacherCodes.map((code) => {
                                         const classStudents = data.users.filter(u => u.teacherCode === code.code);
-                                        const linksCount = code.researchLinks?.length || 4; // default links
+                                        const linksCount = code.researchLinks?.length || 4;
                                         const interestRate = code.interestRate || 0;
                                         const interestFrequency = code.interestFrequency || 30;
+                                        const dividendAmount = code.dividendAmount || 0;
+                                        const dividendFrequency = code.dividendFrequency || 'weekly';
                                         
                                         return (
                                             <tr key={code.code}>
@@ -2227,7 +2370,12 @@
                                                 </td>
                                                 <td>{classStudents.length}</td>
                                                 <td>{linksCount} links</td>
-                                                <td>{interestRate}% every {interestFrequency} days</td>
+                                                <td>
+                                                    <div>{interestRate}% every {interestFrequency} days</div>
+                                                    <div style={{fontSize: '0.85rem', color: 'var(--text-gray)'}}>
+                                                        ${dividendAmount} {dividendFrequency}
+                                                    </div>
+                                                </td>
                                                 <td>
                                                     <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
                                                         <button 
@@ -2347,21 +2495,21 @@
                     {/* Interest Rate Editor Modal */}
                     {editingInterest && (
                         <div className="modal-overlay" onClick={() => setEditingInterest(null)}>
-                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()} style={{maxWidth: '600px'}}>
                                 <div className="modal-header">
-                                    <h2 className="modal-title">Edit Interest Settings</h2>
+                                    <h2 className="modal-title">Edit Interest & Dividend Settings</h2>
                                     <button className="close-btn" onClick={() => setEditingInterest(null)}>×</button>
                                 </div>
 
                                 <div className="modal-body">
                                     <div className="alert-info" style={{marginBottom: '1.5rem'}}>
-                                        <strong>How Interest Works</strong>
+                                        <strong>Class-Wide Settings</strong>
                                         <p style={{marginTop: '0.5rem', fontSize: '0.9rem'}}>
-                                            Interest is automatically applied to student cash balances. For example, 5% every 30 days means 
-                                            students earn 5% interest on their cash balance once per month.
+                                            These settings apply to all students in this class by default. You can override them for individual students in Student Management.
                                         </p>
                                     </div>
 
+                                    <h3 style={{marginBottom: '1rem', marginTop: '1.5rem'}}>Interest Settings</h3>
                                     <div className="form-group">
                                         <label className="form-label">Interest Rate (%)</label>
                                         <input
@@ -2387,12 +2535,45 @@
                                         />
                                     </div>
 
+                                    <h3 style={{marginBottom: '1rem', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-light)'}}>Dividend Settings</h3>
+                                    <p style={{fontSize: '0.9rem', color: 'var(--text-gray)', marginBottom: '1rem'}}>
+                                        Dividends work like an allowance - students receive a fixed amount regularly.
+                                    </p>
+
+                                    <div className="form-group">
+                                        <label className="form-label">Dividend Amount ($)</label>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            value={dividendAmount}
+                                            onChange={(e) => setDividendAmount(e.target.value)}
+                                            placeholder="e.g., 100"
+                                            step="0.01"
+                                            min="0"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label">Frequency</label>
+                                        <select
+                                            className="form-input"
+                                            value={dividendFrequency}
+                                            onChange={(e) => setDividendFrequency(e.target.value)}
+                                        >
+                                            <option value="daily">Daily</option>
+                                            <option value="bi-daily">Every 2 Days</option>
+                                            <option value="tri-daily">Every 3 Days</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="bi-weekly">Bi-Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                        </select>
+                                    </div>
+
                                     <div style={{background: 'var(--bg-light)', padding: '1rem', borderRadius: '4px', marginTop: '1rem'}}>
-                                        <strong>Example:</strong>
+                                        <strong>Summary:</strong>
                                         <p style={{marginTop: '0.5rem', color: 'var(--text-gray)', fontSize: '0.9rem'}}>
-                                            With {interestRate || 0}% interest every {interestFrequency || 30} days, a student with 
-                                            $10,000 cash would earn ${((10000 * (parseFloat(interestRate) || 0) / 100).toFixed(2))} 
-                                            every {interestFrequency || 30} days.
+                                            Students will earn {interestRate || 0}% interest on cash every {interestFrequency || 30} days, 
+                                            and receive ${dividendAmount || 0} {dividendFrequency || 'weekly'}.
                                         </p>
                                     </div>
 
@@ -2401,12 +2582,453 @@
                                         style={{width: '100%', marginTop: '1.5rem'}}
                                         onClick={() => saveInterest(editingInterest)}
                                     >
-                                        Save Interest Settings
+                                        Save Settings
                                     </button>
                                 </div>
                             </div>
                         </div>
                     )}
+                </div>
+            );
+        };
+
+        // ============ STUDENT MANAGEMENT VIEW ============
+        const StudentManagementView = ({ teacherCodes, students, data, setData }) => {
+            const [selectedClass, setSelectedClass] = useState(null);
+            const [selectedStudent, setSelectedStudent] = useState(null);
+            const [editingStudent, setEditingStudent] = useState(null);
+            const [studentSettings, setStudentSettings] = useState({});
+
+            const getClassStudents = (classCode) => {
+                return students.filter(s => s.teacherCode === classCode);
+            };
+
+            const selectStudent = (student) => {
+                setSelectedStudent(student);
+                const classCode = teacherCodes.find(c => c.code === student.teacherCode);
+                setStudentSettings({
+                    interestRate: student.interestRateOverride !== undefined ? student.interestRateOverride : classCode?.interestRate || 0,
+                    interestFrequency: student.interestFrequencyOverride !== undefined ? student.interestFrequencyOverride : classCode?.interestFrequency || 30,
+                    dividendAmount: student.dividendAmountOverride !== undefined ? student.dividendAmountOverride : classCode?.dividendAmount || 0,
+                    dividendFrequency: student.dividendFrequencyOverride !== undefined ? student.dividendFrequencyOverride : classCode?.dividendFrequency || 'weekly',
+                });
+            };
+
+            const saveStudentSettings = () => {
+                const updatedUsers = data.users.map(u => 
+                    u.id === selectedStudent.id ? {
+                        ...u,
+                        interestRateOverride: studentSettings.interestRate,
+                        interestFrequencyOverride: studentSettings.interestFrequency,
+                        dividendAmountOverride: studentSettings.dividendAmount,
+                        dividendFrequencyOverride: studentSettings.dividendFrequency
+                    } : u
+                );
+                setData({ ...data, users: updatedUsers });
+                setEditingStudent(null);
+                alert('Student settings updated!');
+            };
+
+            const pauseStudent = (studentId) => {
+                if (confirm('Pause this student account? They will not be able to log in.')) {
+                    const updatedUsers = data.users.map(u => 
+                        u.id === studentId ? { ...u, isPaused: true } : u
+                    );
+                    setData({ ...data, users: updatedUsers });
+                }
+            };
+
+            const unpauseStudent = (studentId) => {
+                const updatedUsers = data.users.map(u => 
+                    u.id === studentId ? { ...u, isPaused: false } : u
+                );
+                setData({ ...data, users: updatedUsers });
+            };
+
+            const deleteStudent = (studentId) => {
+                if (confirm('PERMANENTLY DELETE this student and all their data? This cannot be undone!')) {
+                    const updatedUsers = data.users.filter(u => u.id !== studentId);
+                    setData({ ...data, users: updatedUsers });
+                    setSelectedStudent(null);
+                }
+            };
+
+            if (selectedStudent) {
+                const portfolioValue = selectedStudent.balance + selectedStudent.portfolio.reduce((sum, h) => 
+                    sum + (h.shares * h.avgCost), 0
+                );
+                const totalGain = portfolioValue - 100000;
+                const totalGainPercent = (totalGain / 100000) * 100;
+
+                return (
+                    <div>
+                        <button 
+                            className="btn btn-secondary" 
+                            onClick={() => setSelectedStudent(null)}
+                            style={{marginBottom: '1.5rem'}}
+                        >
+                            ← Back to Class
+                        </button>
+
+                        <div style={{background: 'var(--bg-white)', padding: '2rem', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '2rem'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start'}}>
+                                <div>
+                                    <h2 style={{fontSize: '2rem', marginBottom: '0.5rem'}}>{selectedStudent.name}</h2>
+                                    <p style={{color: 'var(--text-gray)'}}>@{selectedStudent.username}</p>
+                                    {selectedStudent.isPaused && (
+                                        <div style={{background: '#ffd700', color: '#000', padding: '0.5rem 1rem', borderRadius: '4px', display: 'inline-block', marginTop: '0.5rem', fontWeight: '600'}}>
+                                            ⏸ ACCOUNT PAUSED
+                                        </div>
+                                    )}
+                                </div>
+                                <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
+                                    <button 
+                                        className="btn btn-primary" 
+                                        onClick={() => setEditingStudent(selectedStudent.id)}
+                                    >
+                                        Edit Settings
+                                    </button>
+                                    {selectedStudent.isPaused ? (
+                                        <button 
+                                            className="btn btn-secondary" 
+                                            onClick={() => unpauseStudent(selectedStudent.id)}
+                                        >
+                                            Unpause
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            className="btn btn-secondary" 
+                                            onClick={() => pauseStudent(selectedStudent.id)}
+                                        >
+                                            Pause Account
+                                        </button>
+                                    )}
+                                    <button 
+                                        className="btn btn-danger" 
+                                        onClick={() => deleteStudent(selectedStudent.id)}
+                                    >
+                                        Delete Student
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginTop: '2rem'}}>
+                                <div>
+                                    <div style={{fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '0.5rem'}}>Portfolio Value</div>
+                                    <div style={{fontSize: '1.5rem', fontWeight: '700'}}>${portfolioValue.toFixed(2)}</div>
+                                </div>
+                                <div>
+                                    <div style={{fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '0.5rem'}}>Cash Balance</div>
+                                    <div style={{fontSize: '1.5rem', fontWeight: '700', color: 'var(--primary-green)'}}>${selectedStudent.balance.toFixed(2)}</div>
+                                </div>
+                                <div>
+                                    <div style={{fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '0.5rem'}}>Total Gain/Loss</div>
+                                    <div style={{fontSize: '1.5rem', fontWeight: '700', color: totalGain >= 0 ? 'var(--success-green)' : 'var(--loss-red)'}}>
+                                        {totalGain >= 0 ? '+' : ''}${totalGain.toFixed(2)} ({totalGainPercent.toFixed(2)}%)
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '0.5rem'}}>Holdings</div>
+                                    <div style={{fontSize: '1.5rem', fontWeight: '700'}}>{selectedStudent.portfolio.length}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Student Portfolio */}
+                        <div className="table-container" style={{marginBottom: '2rem'}}>
+                            <div className="table-header">
+                                <div className="table-title">Portfolio Holdings</div>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Shares</th>
+                                        <th>Avg Cost</th>
+                                        <th>Total Cost</th>
+                                        <th>Current Value</th>
+                                        <th>Gain/Loss</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {selectedStudent.portfolio.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" style={{textAlign: 'center', padding: '2rem', color: 'var(--text-gray)'}}>
+                                                No holdings yet
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        selectedStudent.portfolio.map((holding) => {
+                                            const totalCost = holding.avgCost * holding.shares;
+                                            const currentValue = holding.avgCost * holding.shares; // Using avgCost as proxy
+                                            const gainLoss = currentValue - totalCost;
+
+                                            return (
+                                                <tr key={holding.symbol}>
+                                                    <td className="symbol-cell">{holding.symbol}</td>
+                                                    <td>{holding.shares}</td>
+                                                    <td className="price-cell">${holding.avgCost.toFixed(2)}</td>
+                                                    <td className="price-cell">${totalCost.toFixed(2)}</td>
+                                                    <td className="price-cell">${currentValue.toFixed(2)}</td>
+                                                    <td className={gainLoss >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                        {gainLoss >= 0 ? '+' : ''}${gainLoss.toFixed(2)}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Student Transactions */}
+                        <div className="table-container">
+                            <div className="table-header">
+                                <div className="table-title">Transaction History</div>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Symbol</th>
+                                        <th>Shares</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {selectedStudent.transactions.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" style={{textAlign: 'center', padding: '2rem', color: 'var(--text-gray)'}}>
+                                                No transactions yet
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        selectedStudent.transactions.slice(0, 20).map((t) => (
+                                            <tr key={t.id}>
+                                                <td>{new Date(t.date).toLocaleDateString()}</td>
+                                                <td>{t.type.toUpperCase()}</td>
+                                                <td className="symbol-cell">{t.symbol}</td>
+                                                <td>{t.shares}</td>
+                                                <td className="price-cell">${t.price.toFixed(2)}</td>
+                                                <td className={t.type === 'buy' ? 'gain-negative' : 'gain-positive'}>
+                                                    {t.type === 'buy' ? '-' : '+'}${t.total.toFixed(2)}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Edit Student Settings Modal */}
+                        {editingStudent && (
+                            <div className="modal-overlay" onClick={() => setEditingStudent(null)}>
+                                <div className="modal" onClick={(e) => e.stopPropagation()} style={{maxWidth: '600px'}}>
+                                    <div className="modal-header">
+                                        <h2 className="modal-title">Edit Student Settings</h2>
+                                        <button className="close-btn" onClick={() => setEditingStudent(null)}>×</button>
+                                    </div>
+                                    <div className="modal-body">
+                                        <div className="alert-info" style={{marginBottom: '1.5rem'}}>
+                                            These settings override the class defaults for this student only.
+                                        </div>
+
+                                        <h3 style={{marginBottom: '1rem'}}>Interest Settings</h3>
+                                        <div className="form-group">
+                                            <label className="form-label">Interest Rate (%)</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={studentSettings.interestRate}
+                                                onChange={(e) => setStudentSettings({...studentSettings, interestRate: parseFloat(e.target.value) || 0})}
+                                                step="0.1"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Frequency (Days)</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={studentSettings.interestFrequency}
+                                                onChange={(e) => setStudentSettings({...studentSettings, interestFrequency: parseInt(e.target.value) || 30})}
+                                            />
+                                        </div>
+
+                                        <h3 style={{marginBottom: '1rem', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-light)'}}>Dividend Settings</h3>
+                                        <div className="form-group">
+                                            <label className="form-label">Dividend Amount ($)</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={studentSettings.dividendAmount}
+                                                onChange={(e) => setStudentSettings({...studentSettings, dividendAmount: parseFloat(e.target.value) || 0})}
+                                                step="0.01"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Frequency</label>
+                                            <select
+                                                className="form-input"
+                                                value={studentSettings.dividendFrequency}
+                                                onChange={(e) => setStudentSettings({...studentSettings, dividendFrequency: e.target.value})}
+                                            >
+                                                <option value="daily">Daily</option>
+                                                <option value="bi-daily">Every 2 Days</option>
+                                                <option value="tri-daily">Every 3 Days</option>
+                                                <option value="weekly">Weekly</option>
+                                                <option value="bi-weekly">Bi-Weekly</option>
+                                                <option value="monthly">Monthly</option>
+                                            </select>
+                                        </div>
+
+                                        <button 
+                                            className="btn btn-primary"
+                                            style={{width: '100%', marginTop: '1.5rem'}}
+                                            onClick={saveStudentSettings}
+                                        >
+                                            Save Settings
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            if (selectedClass) {
+                const classStudents = getClassStudents(selectedClass);
+                
+                return (
+                    <div>
+                        <button 
+                            className="btn btn-secondary" 
+                            onClick={() => setSelectedClass(null)}
+                            style={{marginBottom: '1.5rem'}}
+                        >
+                            ← Back to All Classes
+                        </button>
+
+                        <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>
+                            {teacherCodes.find(c => c.code === selectedClass)?.className} Students
+                        </h2>
+
+                        <div className="table-container">
+                            <div className="table-header">
+                                <div className="table-title">Students ({classStudents.length})</div>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Portfolio Value</th>
+                                        <th>Cash</th>
+                                        <th>Gain/Loss</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {classStudents.map((student) => {
+                                        const portfolioValue = student.balance + student.portfolio.reduce((sum, h) => 
+                                            sum + (h.shares * h.avgCost), 0
+                                        );
+                                        const totalGain = portfolioValue - 100000;
+
+                                        return (
+                                            <tr key={student.id}>
+                                                <td>{student.name}</td>
+                                                <td>@{student.username}</td>
+                                                <td className="price-cell">${portfolioValue.toFixed(2)}</td>
+                                                <td className="price-cell">${student.balance.toFixed(2)}</td>
+                                                <td className={totalGain >= 0 ? 'gain-positive' : 'gain-negative'}>
+                                                    {totalGain >= 0 ? '+' : ''}${totalGain.toFixed(2)}
+                                                </td>
+                                                <td>
+                                                    {student.isPaused ? (
+                                                        <span style={{color: '#ffd700', fontWeight: '600'}}>⏸ Paused</span>
+                                                    ) : (
+                                                        <span style={{color: 'var(--success-green)', fontWeight: '600'}}>✓ Active</span>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <button 
+                                                        className="btn btn-primary"
+                                                        style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
+                                                        onClick={() => selectStudent(student)}
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Default view - show all classes
+            return (
+                <div>
+                    <h2 style={{fontSize: '2rem', marginBottom: '2rem'}}>Student Management by Class</h2>
+                    
+                    <div style={{display: 'grid', gap: '1.5rem'}}>
+                        {teacherCodes.map((code) => {
+                            const classStudents = getClassStudents(code.code);
+                            
+                            return (
+                                <div 
+                                    key={code.code}
+                                    style={{
+                                        background: 'var(--bg-white)',
+                                        padding: '2rem',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onClick={() => setSelectedClass(code.code)}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                    }}
+                                >
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <div>
+                                            <h3 style={{fontSize: '1.5rem', marginBottom: '0.5rem'}}>{code.className}</h3>
+                                            <p style={{color: 'var(--text-gray)'}}>Code: <span className="class-code">{code.code}</span></p>
+                                        </div>
+                                        <div style={{textAlign: 'right'}}>
+                                            <div style={{fontSize: '2rem', fontWeight: '700', color: 'var(--primary-blue)'}}>
+                                                {classStudents.length}
+                                            </div>
+                                            <div style={{fontSize: '0.9rem', color: 'var(--text-gray)'}}>Students</div>
+                                        </div>
+                                    </div>
+                                    <div style={{marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-light)', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem'}}>
+                                        <div>
+                                            <div style={{fontSize: '0.85rem', color: 'var(--text-gray)'}}>Interest</div>
+                                            <div style={{fontSize: '0.95rem', fontWeight: '600'}}>{code.interestRate || 0}% / {code.interestFrequency || 30} days</div>
+                                        </div>
+                                        <div>
+                                            <div style={{fontSize: '0.85rem', color: 'var(--text-gray)'}}>Dividend</div>
+                                            <div style={{fontSize: '0.95rem', fontWeight: '600'}}>${code.dividendAmount || 0} {code.dividendFrequency || 'weekly'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             );
         };
